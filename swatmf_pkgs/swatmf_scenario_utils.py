@@ -14,12 +14,12 @@ import glob
 from tqdm import tqdm
 
 
-
 def get_weather_folder_lists(wd):
     os.chdir(wd)
     wt_fds = [name for name in os.listdir(".") if os.path.isdir(name)]
     full_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
     return wt_fds, full_paths
+
 
 def cvt_gcm_pcp(wd):
     wt_fds, full_paths = get_weather_folder_lists(wd)
@@ -44,7 +44,6 @@ def cvt_gcm_pcp(wd):
     print("  Done!")
 
 
-
 def _remove_readonly(func, path, excinfo):
     """remove readonly dirs, apparently only a windows issue
     add to all rmtree calls: shutil.rmtree(**,onerror=remove_readonly), wk"""
@@ -54,7 +53,11 @@ def _remove_readonly(func, path, excinfo):
 
 def execute_scenarios(
             models_wd, weathers_wd,
-            scn_models_wd=None, model_lists=None, weather_lists=None, copy_files=None):
+            scn_models_wd=None, model_lists=None, weather_lists=None,
+            copy_files_fr_model=None,
+            copy_files_fr_weather=None,
+            reuse_models=None,
+            ):
     
     if model_lists is None:
         os.chdir(models_wd)
@@ -75,104 +78,102 @@ def execute_scenarios(
             # except Exception as e:
             #     raise Exception("unable to remove existing worker dir:" + \
             #                     "{0}\n{1}".format(new_model_dir,str(e)))
-            print("  Creating new model: {}_{} ... processing".format(i, j))
-            try:
-                shutil.copytree(mp, new_model_dir)
-                os.chdir(wp)
-                if copy_files is None:
-                    onlyfiles = [f for f in os.listdir(wp) if os.path.isfile(os.path.join(wp, f))]
-                for f in onlyfiles:
-                    shutil.copyfile(f, os.path.join(new_model_dir,f))
-            except Exception as e:
-                raise Exception("unable to copy files from worker dir: " + \
-                                "{0} to new worker dir: {1}\n{2}".format(mp, new_model_dir,str(e)))
-
+            if os.path.exists(new_model_dir) and reuse_models is None:
+                try:
+                    shutil.rmtree(new_model_dir, onerror=_remove_readonly)#, onerror=del_rw)
+                except Exception as e:
+                    raise Exception("unable to remove existing worker dir:" + \
+                                    "{0}\n{1}".format(new_model_dir,str(e)))
+                print("  Creating new model: {}_{} ... processing".format(i, j))
+                try:
+                    shutil.copytree(mp, new_model_dir)
+                except Exception as e:
+                    raise Exception("unable to copy files from worker dir: " + \
+                                    "{0} to new worker dir: {1}\n{2}".format(mp, new_model_dir,str(e)))
+                print("  Creating new model: {}_{} ... passed".format(i, j)) 
+            elif os.path.exists(new_model_dir) and reuse_models is True:
+                try:
+                    os.chdir(mp)
+                    shutil.copyfile('file.cio', os.path.join(new_model_dir, 'file.cio'))
+                except Exception as e:
+                    raise Exception("unable to copy *.pst from main worker: " + \
+                                    "{0} to new worker dir: {1}\n{2}".format(mp, new_model_dir,str(e)))
+                print("  Using existing model: {}_{} ... passed".format(i, j)) 
+            else:
+                try:
+                    shutil.copytree(mp, new_model_dir)
+                except Exception as e:
+                    raise Exception("unable to copy files from worker dir: " + \
+                                    "{0} to new worker dir: {1}\n{2}".format(mp, new_model_dir,str(e)))
+                print("  Creating new model: {}_{} ... passed".format(i, j)) 
+            if copy_files_fr_model is not None and reuse_models is True:
+                try:
+                    os.chdir(mp)
+                    for f in copy_files_fr_model:
+                        shutil.copyfile(f, os.path.join(new_model_dir,f))
+                except Exception as e:
+                    raise Exception("unable to copy {0} from model dir: " + \
+                                    "{1} to new model dir: {2}\n{3}".format(f, mp, new_model_dir,str(e)))      
+            if copy_files_fr_weather is not None and reuse_models is True:
+                try:
+                    os.chdir(wp)
+                    for f in copy_files_fr_weather:
+                        shutil.copyfile(f, os.path.join(new_model_dir,f))
+                except Exception as e:
+                    raise Exception("unable to copy {0} from model dir: " + \
+                                    "{1} to new model dir: {2}\n{3}".format(f, mp, new_model_dir,str(e)))               
             cwd = new_model_dir
             os.chdir(cwd)
             os.system("start cmd /k SWAT-MODFLOW3_fp.exe")
-            print("  Creating new model: {}_{} ... passed".format(i, j))  
 
-# TODO: copy pst / option to use an existing worker
-def execute_workers(
-            worker_rep, pst, host, num_workers=None,
-            start_id=None, worker_root='..', port=4005, reuse_workers=None, copy_files=None):
-    """[summary]
 
-    Args:
-        worker_rep ([type]): [description]
-        pst ([type]): [description]
-        host ([type]): [description]
-        num_workers ([type], optional): [description]. Defaults to None.
-        start_id ([type], optional): [description]. Defaults to None.
-        worker_root (str, optional): [description]. Defaults to '..'.
-        port (int, optional): [description]. Defaults to 4005.
+def extract_scenario_results(
+                    models_wd, result_files, model_results_wd=None, model_list=None, suffix=None,     
+                    ):
+    if suffix is None:
+        suffix = '_results'
+    if model_list is None:
+        os.chdir(models_wd)
+        model_nams = [name for name in os.listdir(".") if os.path.isdir(name)]
+        model_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
+    if model_results_wd is None:
+        model_results_wd = '..'
+    
+    for i , mp in zip(model_nams, model_paths):
+        model_result_dir = os.path.join(model_results_wd, "{}{}".format(i, suffix))
+        if not os.path.exists(model_result_dir):
+            os.mkdir(model_result_dir)
+        try:
+            print("  Coyping output files from {} to {} ... processing".format(i, mp))  
+            os.chdir(mp)
+            for f in result_files:
+                shutil.copyfile(f, os.path.join(model_result_dir, f))
+            print("  Coyping output files from {} to {} ... passed".format(i, mp))  
+        except Exception as e:
+                raise Exception("unable to copy {} from model: " + \
+                                "to new worker dir: {1}\n{2}".format(f, mp, str(e)))            
 
-    Raises:
-        Exception: [description]
-        Exception: [description]
-        Exception: [description]
-        Exception: [description]
-    """
-
-    if not os.path.isdir(worker_rep):
-        raise Exception("master dir '{0}' not found".format(worker_rep))
-    if not os.path.isdir(worker_root):
-        raise Exception("worker root dir not found")
-    if num_workers is None:
-        num_workers = mp.cpu_count()
-    else:
-        num_workers = int(num_workers)
-    if start_id is None:
-        start_id = 0
-    else:
-        start_id = start_id
-
-    hostname = host
-    base_dir = os.getcwd()
-    port = int(port)
-    cwd = os.chdir(worker_rep)
-    tcp_arg = "{0}:{1}".format(hostname,port)
-
-    for i in range(start_id, num_workers + start_id):
-        new_worker_dir = os.path.join(worker_root,"worker_{0}".format(i))
-        if os.path.exists(new_worker_dir) and reuse_workers is None:
-            try:
-                shutil.rmtree(new_worker_dir, onerror=_remove_readonly)#, onerror=del_rw)
-            except Exception as e:
-                raise Exception("unable to remove existing worker dir:" + \
-                                "{0}\n{1}".format(new_worker_dir,str(e)))
-            try:
-                shutil.copytree(worker_rep,new_worker_dir)
-            except Exception as e:
-                raise Exception("unable to copy files from worker dir: " + \
-                                "{0} to new worker dir: {1}\n{2}".format(worker_rep,new_worker_dir,str(e)))
-        elif os.path.exists(new_worker_dir) and reuse_workers is True:
-            try:
-                shutil.copyfile(pst, os.path.join(new_worker_dir, pst))
-            except Exception as e:
-                raise Exception("unable to copy *.pst from main worker: " + \
-                                "{0} to new worker dir: {1}\n{2}".format(worker_rep,new_worker_dir,str(e)))
-        else:
-            try:
-                shutil.copytree(worker_rep,new_worker_dir)
-            except Exception as e:
-                raise Exception("unable to copy files from worker dir: " + \
-                                "{0} to new worker dir: {1}\n{2}".format(worker_rep,new_worker_dir,str(e)))
-        if copy_files is not None and reuse_workers is True:
-            try:
-                for f in copy_files:
-                    shutil.copyfile(f, os.path.join(new_worker_dir, f))
-            except Exception as e:
-                raise Exception("unable to copy *.pst from main worker: " + \
-                                "{0} to new worker dir: {1}\n{2}".format(worker_rep, new_worker_dir,str(e)))
-
-        cwd = new_worker_dir
-        os.chdir(cwd)
-        os.system("start cmd /k beopest64 {0} /h {1}".format(pst, tcp_arg))
+    
 
 
 if __name__ == '__main__':
-    mwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
-    wwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs"
-    gwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\gcm_performances"
-    execute_scenarios(mwd, wwd, scn_models_wd=gwd)
+    models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
+    weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs"
+    scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
+    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results"
+    # result_files = [
+    #     'output.rch',    
+    #     'output.sub',
+    #     'output.rsv',
+    #     'output.std',
+    #     'swatmf_out_MF_gwsw_monthly',
+    #     'swatmf_out_MF_head_monthly',
+    #     'swatmf_out_MF_recharge_monthly',
+    #     'swatmf_out_SWAT_gwsw_monthly',
+    #     'swatmf_out_SWAT_recharge_monthly'
+    #     ]
+    # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    execute_scenarios(
+            models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
+            copy_files_fr_model=['okvg_3000.dis']
+            )

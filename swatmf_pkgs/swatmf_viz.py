@@ -9,6 +9,48 @@ import os
 from hydroeval import evaluator, nse, rmse, pbias
 import numpy as np
 
+
+def get_all_scenario_lists(wd):
+    os.chdir(wd)
+    scn_nams = [name for name in os.listdir(".") if os.path.isdir(name)]
+    full_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
+    return scn_nams, full_paths    
+
+
+def all_strs(wd, sub_number, start_date, obd_nam, time_step=None):
+    scn_nams, full_paths = get_all_scenario_lists(wd)
+    if time_step is None:
+        time_step = "D"
+        strobd_file = "streamflow.obd"
+    else:
+        time_step = "M"
+        strobd_file = "streamflow_month.obd"
+    tot_df = pd.DataFrame()
+    for scn_nam, p in zip(scn_nams, full_paths):
+        os.chdir(p)
+        print("Folder changed to {}".format(p))
+        df = pd.read_csv(
+                    os.path.join("output.rch"),
+                    delim_whitespace=True,
+                    skiprows=9,
+                    usecols=[1, 3, 6],
+                    names=["date", "filter", "str_sim"],
+                    index_col=0)
+        df = df.loc[sub_number]
+        if time_step == 'M':
+            df = df[df["filter"] < 13]
+        df.index = pd.date_range(start_date, periods=len(df.str_sim), freq=time_step)
+
+        df.rename(columns = {'str_sim':'{}_sub_{}'.format(scn_nam, sub_number)}, inplace = True)
+        tot_df = pd.concat(
+            [tot_df, df['{}_sub_{}'.format(scn_nam, sub_number)]], axis=1,
+            sort=False
+            )
+    print('Finished!')
+    return tot_df
+
+
+
 def str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
     
     if time_step is None:
@@ -77,9 +119,9 @@ def str_plot(plot_df):
     ax.margins(y=0.2)
     ax.tick_params(axis='both', labelsize=12)
     ax2.tick_params(axis='y', labelsize=12)    
+    
     # add stats
     org_stat = plot_df.dropna()
-
     sim_org = org_stat.iloc[:, 0].to_numpy()
     obd_org = org_stat.iloc[:, 1].to_numpy()
     df_nse = evaluator(nse, sim_org, obd_org)
@@ -382,4 +424,14 @@ def wt_tot_df(sim_start, df_start, df_end, grid_ids, obd_nams, time_step=None):
         df = df.dropna() # drop nan
         new_cols ={x:y for x, y in zip(df.columns, ['sim', 'obd'])} #replace col nams with new nams
         tot_df = tot_df.append(df.rename(columns=new_cols))  
-    return tot_df        
+    return tot_df
+
+
+if __name__ == '__main__':
+    wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
+    sub_number = 240
+    start_date = '1/1/2003'
+    end_date = '12/31/2019'
+    obd_nam = 'sub_240_mohembo'
+    df = all_strs(wd, sub_number, start_date, obd_nam, time_step='M')
+    print(df)
