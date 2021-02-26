@@ -177,3 +177,4 @@ if __name__ == '__main__':
             models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
             copy_files_fr_model=['okvg_3000.dis']
             )
+    print('hi')
