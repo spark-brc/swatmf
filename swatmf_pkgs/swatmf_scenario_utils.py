@@ -160,21 +160,21 @@ if __name__ == '__main__':
     models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
     weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs"
     scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
-    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results"
-    # result_files = [
-    #     'output.rch',    
-    #     'output.sub',
-    #     'output.rsv',
-    #     'output.std',
-    #     'swatmf_out_MF_gwsw_monthly',
-    #     'swatmf_out_MF_head_monthly',
-    #     'swatmf_out_MF_recharge_monthly',
-    #     'swatmf_out_SWAT_gwsw_monthly',
-    #     'swatmf_out_SWAT_recharge_monthly'
-    #     ]
-    # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
-    execute_scenarios(
-            models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
-            copy_files_fr_model=['okvg_3000.dis']
-            )
+    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results_long"
+    result_files = [
+        'output.rch',    
+        'output.sub',
+        'output.rsv',
+        'output.std',
+        'swatmf_out_MF_gwsw_monthly',
+        'swatmf_out_MF_head_monthly',
+        'swatmf_out_MF_recharge_monthly',
+        'swatmf_out_SWAT_gwsw_monthly',
+        'swatmf_out_SWAT_recharge_monthly'
+        ]
+    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    # execute_scenarios(
+    #         models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
+    #         copy_files_fr_model=['okvg_3000.dis']
+    #         )
     print('hi')
