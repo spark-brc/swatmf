@@ -7,6 +7,7 @@ import csv
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import itertools
+import shutil
 
 
 def get_weather_folder_lists(wd):
@@ -48,6 +49,7 @@ def read_gcm(file_path, subs):
     return df
 
 
+
 # def read_gcm_avg(file)
 def read_pcp(pcp_path, nloc):
     with open(pcp_path, 'r') as f:
@@ -83,10 +85,43 @@ def read_tmp(tmp_path, nloc):
     return df_max, df_min
 
 
+def modify_tmp(weather_wd, weather_modified_wd, copy_files_fr_org=None):
+    os.chdir(weather_wd)
+    model_nams = [name for name in os.listdir(".") if os.path.isdir(name)]
+    model_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
+
+    for i, mp in tqdm(zip(model_nams, model_paths), total=len(model_nams)):
+        new_weather_dir = os.path.join(weather_modified_wd, "{}".format(i))
+        if not os.path.exists(new_weather_dir):
+            os.mkdir(new_weather_dir)
+        with open(os.path.join(mp, 'Tmp1.Tmp'), "r") as f:
+            lines = f.readlines()
+        with open(os.path.join(new_weather_dir, 'Tmp1.Tmp'), "w") as f:
+            count = 0
+            for line in lines[:4]:
+                f.write(line.strip()+'\n')
+            for line in lines[4:]:
+                if int(line[:4]) < 2020:
+                    f.write((line[:7]+('-99.0-99.0')*154).strip()+'\n')
+                else:
+                    f.write(line.strip()+'\n')
+        if copy_files_fr_org is not None:
+            try:
+                os.chdir(mp)
+                for f in copy_files_fr_org:
+                    shutil.copyfile(f, os.path.join(new_weather_dir,f))
+            except Exception as e:
+                raise Exception("unable to copy {0} from model dir: " + \
+                                "{1} to new model dir: {2}\n{3}".format(f, mp, new_weather_dir,str(e)))               
+    print('Done!')
+
+
+
+
 #%%
 if __name__ == '__main__':
-    working_path = working_path = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs"
-    wt_fds, full_paths = get_weather_folder_lists(working_path)
-    df_max , df_min = read_tmp(os.path.join(wt_fds[0], 'Tmp1.Tmp'), 154)
+    working_path = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs"
+    working_path2 = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs_modified"
+    modify_tmp(working_path, working_path2, copy_files_fr_org=['pcp1.pcp'])
 
 
