@@ -227,7 +227,7 @@ if __name__ == '__main__':
     models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
     weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_scn_pcp"
     scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
-    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results_long"
+    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results_2003-2050"
     result_files = [
         'output.rch',    
         'output.sub',
@@ -239,10 +239,10 @@ if __name__ == '__main__':
         'swatmf_out_SWAT_gwsw_monthly',
         'swatmf_out_SWAT_recharge_monthly'
         ]
-    # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
-    execute_scenarios(
-            models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
-            # copy_files_fr_model=['okvg_3000.dis']
-            # copy_files_fr_weather=['pcp1.pcp']
-            )
+    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    # execute_scenarios(
+    #         models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
+    #         # copy_files_fr_model=['okvg_3000.dis']
+    #         # copy_files_fr_weather=['pcp1.pcp']
+    #         )
     print('hi')
