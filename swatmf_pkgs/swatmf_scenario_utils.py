@@ -204,7 +204,26 @@ def extract_scenario_results(
                 raise Exception("unable to copy {} from model: " + \
                                 "to new worker dir: {1}\n{2}".format(f, mp, str(e)))            
 
-    
+
+    def read_input_std(wd_base):
+        with open(os.path.join(wd_base, "input.std"), "r") as inf:
+            content = inf.readlines()
+            for i, l in enumerate(inf, 1):
+                if l.strip().startswith("HRU Input Summary Table 1:"):
+                    stnum = i
+                if l.strip().startswith("HRU CN Input Summary Table:"):
+                    ednum = i
+
+        hrus = []
+        areas = []
+        for i in content[stnum+1:ednum-2]:
+            hrus.append(i.split()[1])
+            areas.append(i.split()[2])
+
+        hru_df = pd.DataFrame({'hru':hrus, 'area(ha)':areas})
+        hru_df = hru_df.astype({'hru':int, 'area(ha)':float})
+        hru_df['area(m2)'] = hru_df.loc[:, 'area(ha)']*10000
+        return hru_df
 
 
 # if __name__ == '__main__':
