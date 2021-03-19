@@ -100,7 +100,8 @@ def extract_month_baseflow(sub_file, channels, start_day, cali_start_day, cali_e
                         skiprows=9,
                         usecols=[1, 3, 10, 11, 19],
                         names=["date", "filter", "surq", "gwq", "latq"],
-                        index_col=0)
+                        index_col=0,
+                        dtype={'filter': str})
         
         sim_stf_f = sim_stf.loc[i]
         # sim_stf_f["filter"]= sim_stf_f["filter"].astype(str) 
