@@ -228,12 +228,12 @@ def extract_scenario_results(
 
 # if __name__ == '__main__':
 #     base_file = 'D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models\\base\\pcp1.pcp'
-#     scenario_dir = 'D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs_030821'
+#     scenario_dir = 'D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_fgoals'
 #     base_st = '1/1/1980'
 #     base_ed = '12/31/2019'
 #     scn_st = '1/1/2020'
 #     scn_ed = '12/31/2099'
-#     output_dir = 'D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_scn_pcp'
+#     output_dir = 'D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_fgoals_pcp'
 
 
 
@@ -244,8 +244,8 @@ def extract_scenario_results(
 
 if __name__ == '__main__':
     models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
-    weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_scn_pcp"
-    scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
+    weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_fgoals_pcp"
+    scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_fgoals"
     mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results_2003-2050"
     result_files = [
         'output.rch',    
@@ -258,10 +258,11 @@ if __name__ == '__main__':
         'swatmf_out_SWAT_gwsw_monthly',
         'swatmf_out_SWAT_recharge_monthly'
         ]
-    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
-    # execute_scenarios(
-    #         models_wd, weather_wd, scn_models_wd=scn_wd, reuse_models=True,
-    #         # copy_files_fr_model=['okvg_3000.dis']
-    #         # copy_files_fr_weather=['pcp1.pcp']
-    #         )
+    # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    execute_scenarios(
+            models_wd, weather_wd, scn_models_wd=scn_wd,
+            # reuse_models=True,
+            # copy_files_fr_model=['okvg_3000.dis']
+            copy_files_fr_weather=['pcp1.pcp', 'Tmp1.Tmp']
+            )
     print('hi')

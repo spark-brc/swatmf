@@ -120,9 +120,9 @@ def modify_tmp(weather_wd, weather_modified_wd, copy_files_fr_org=None):
 
 #%%
 if __name__ == '__main__':
-    working_path = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs_030821"
+    working_path = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_fgoals"
     working_path2 = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\weather_inputs_modified"
-    # modify_tmp(working_path, working_path2, copy_files_fr_org=['pcp1.pcp'])
-    cvt_gcm_pcp(working_path)
+    modify_tmp(working_path, working_path2, copy_files_fr_org=['pcp1.pcp'])
+    # cvt_gcm_pcp(working_path)
 
 
