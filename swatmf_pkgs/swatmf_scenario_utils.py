@@ -261,7 +261,7 @@ if __name__ == '__main__':
     # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
     execute_scenarios(
             models_wd, weather_wd, scn_models_wd=scn_wd,
-            # reuse_models=True,
+            reuse_models=True,
             # copy_files_fr_model=['okvg_3000.dis']
             copy_files_fr_weather=['pcp1.pcp', 'Tmp1.Tmp']
             )
