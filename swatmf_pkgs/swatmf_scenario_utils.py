@@ -175,7 +175,7 @@ def execute_scenarios(
                                     "{1} to new model dir: {2}\n{3}".format(f, mp, new_model_dir,str(e)))               
             cwd = new_model_dir
             os.chdir(cwd)
-            os.system("start cmd /k SWAT-MODFLOW3_fp.exe")
+            os.system("start cmd /k SWAT-MODFLOW-fp4.exe")
 
 
 def extract_scenario_results(
@@ -205,25 +205,25 @@ def extract_scenario_results(
                                 "to new worker dir: {1}\n{2}".format(f, mp, str(e)))            
 
 
-    def read_input_std(wd_base):
-        with open(os.path.join(wd_base, "input.std"), "r") as inf:
-            content = inf.readlines()
-            for i, l in enumerate(inf, 1):
-                if l.strip().startswith("HRU Input Summary Table 1:"):
-                    stnum = i
-                if l.strip().startswith("HRU CN Input Summary Table:"):
-                    ednum = i
+def read_input_std(wd_base):
+    with open(os.path.join(wd_base, "input.std"), "r") as inf:
+        content = inf.readlines()
+        for i, l in enumerate(inf, 1):
+            if l.strip().startswith("HRU Input Summary Table 1:"):
+                stnum = i
+            if l.strip().startswith("HRU CN Input Summary Table:"):
+                ednum = i
 
-        hrus = []
-        areas = []
-        for i in content[stnum+1:ednum-2]:
-            hrus.append(i.split()[1])
-            areas.append(i.split()[2])
+    hrus = []
+    areas = []
+    for i in content[stnum+1:ednum-2]:
+        hrus.append(i.split()[1])
+        areas.append(i.split()[2])
 
-        hru_df = pd.DataFrame({'hru':hrus, 'area(ha)':areas})
-        hru_df = hru_df.astype({'hru':int, 'area(ha)':float})
-        hru_df['area(m2)'] = hru_df.loc[:, 'area(ha)']*10000
-        return hru_df
+    hru_df = pd.DataFrame({'hru':hrus, 'area(ha)':areas})
+    hru_df = hru_df.astype({'hru':int, 'area(ha)':float})
+    hru_df['area(m2)'] = hru_df.loc[:, 'area(ha)']*10000
+    return hru_df
 
 
 # if __name__ == '__main__':
@@ -258,11 +258,11 @@ if __name__ == '__main__':
         'swatmf_out_SWAT_gwsw_monthly',
         'swatmf_out_SWAT_recharge_monthly'
         ]
-    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
-    # execute_scenarios(
-    #         models_wd, weather_wd, scn_models_wd=scn_wd,
-    #         reuse_models=True,
-    #         # copy_files_fr_model=['okvg_3000.dis']
-    #         copy_files_fr_weather=['pcp1.pcp', 'Tmp1.Tmp']
-    #         )
+    # extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    execute_scenarios(
+            models_wd, weather_wd, scn_models_wd=scn_wd,
+            reuse_models=True,
+            copy_files_fr_model=['SWAT-MODFLOW-fp4.exe']
+            # copy_files_fr_weather=['pcp1.pcp', 'Tmp1.Tmp']
+            )
     print('hi')
