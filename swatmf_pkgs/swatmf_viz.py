@@ -507,7 +507,7 @@ def read_output_hru(wd):
     with open(os.path.join(wd, 'output.hru'), 'r') as f:
         content = f.readlines()
     lulc = [(i[:4]) for i in content[9:]]
-    hrus = [int(i[4:9]) for i in content[9:]]
+    hrus = [str(i[10:19]) for i in content[9:]]
     subs = [int(i[19:24]) for i in content[9:]]
     mons = [(i[29:34]) for i in content[9:]]
     areas = [float(i[34:44]) for i in content[9:]]
@@ -517,7 +517,7 @@ def read_output_hru(wd):
         np.column_stack([lulc, hrus, subs, mons, areas, irr]),
         columns=['lulc', 'hru', 'sub', 'mon', 'area_km2', 'irr_mm'])
 
-    conv_types = {'hru':int, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
+    conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
     hru_df = hru_df.astype(conv_types)
     hru_df = hru_df.loc[hru_df['mon'] < 13]
     hru_df['mon'] = hru_df['mon'].astype(int)
@@ -525,6 +525,29 @@ def read_output_hru(wd):
 
     return hru_df
 
+def read_output_sub(wd):
+    with open(os.path.join(wd, 'output.sub'), 'r') as f:
+        content = f.readlines()
+    subs = [int(i[6:10]) for i in content[9:]]
+    mons = [float(i[19:24]) for i in content[9:]]
+    preps = [float(i[34:44]) for i in content[9:]]
+    pets = [float(i[54:64]) for i in content[9:]]
+    ets = [float(i[64:74]) for i in content[9:]]
+    sws = [float(i[74:84]) for i in content[9:]]
+    percs = [float(i[84:94]) for i in content[9:]]
+    surqs = [float(i[94:104]) for i in content[9:]]
+    gwqs = [float(i[104:114]) for i in content[9:]]    
+    sub_df = pd.DataFrame(
+        np.column_stack([subs, mons, preps, pets, ets, sws, percs, surqs, gwqs]),
+        columns=["subs","mons", "precip", "pet", "et", "sw", "perco", "surq", "gwq"])
+
+    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
+    # hru_df = hru_df.astype(conv_types)
+    sub_df = sub_df.loc[sub_df['mons'] < 13]
+    sub_df['mons'] = sub_df['mons'].astype(int)
+    sub_df['subs'] = sub_df['subs'].astype(int)
+
+    return sub_df
 
 
 
