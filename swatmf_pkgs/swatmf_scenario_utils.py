@@ -175,7 +175,7 @@ def execute_scenarios(
                                     "{1} to new model dir: {2}\n{3}".format(f, mp, new_model_dir,str(e)))               
             cwd = new_model_dir
             os.chdir(cwd)
-            os.system("start cmd /k SWAT-MODFLOW-fp4.exe")
+            os.system("start cmd /k swatmf3-fp.exe")
 
 
 def extract_scenario_results(
@@ -244,8 +244,8 @@ def read_input_std(wd_base):
 
 if __name__ == '__main__':
     models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
-    weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_scn_pcp"
-    scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\\scn_models"
+    weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_fgoals_pcp"
+    scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\\scn_model_fgoals"
     mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_fgoals_results_2020-2050"
     result_files = [
         'output.rch',    
@@ -262,7 +262,7 @@ if __name__ == '__main__':
     execute_scenarios(
             models_wd, weather_wd, scn_models_wd=scn_wd,
             reuse_models=True,
-            copy_files_fr_model=['SWAT-MODFLOW-fp4.exe']
+            copy_files_fr_model=['swatmf3-fp.exe']
             # copy_files_fr_weather=['pcp1.pcp', 'Tmp1.Tmp']
             )
     print('hi')
