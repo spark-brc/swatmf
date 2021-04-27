@@ -369,6 +369,6 @@ if __name__ == '__main__':
     # obd_nam = 'sub_240_mohembo'
     # df = all_strs(wd, sub_number, start_date, obd_nam, time_step='M')
     
-    wd = "D:/Projects/Watersheds/SanRafael/Analysis/apexmf/APEX-MODFLOW/MODFLOW/"
+    wd = "D:/Projects/Watersheds/Gunnison/Analysis/MODFLOW/mf_model_042621"
     fname = "mf_1000.riv"
     delete_duplicate_river_grids(wd, fname)
