@@ -537,20 +537,77 @@ def read_output_sub(wd):
     percs = [float(i[84:94]) for i in content[9:]]
     surqs = [float(i[94:104]) for i in content[9:]]
     gwqs = [float(i[104:114]) for i in content[9:]]
+    seds = [float(i[124:134]) for i in content[9:]]
     latq = [float(i[184:194]) for i in content[9:]] 
     sub_df = pd.DataFrame(
-        np.column_stack([subs, mons, preps, sws, latq, surqs, ets, percs, gwqs]),
-        columns=["subs","mons", "precip", "sw", "latq", "surq", "et", "perco", "gwq"])
+        np.column_stack([subs, mons, preps, sws, latq, surqs, ets, percs, gwqs, seds]),
+        columns=["subs","mons", "precip", "sw", "latq", "surq", "et", "perco", "gwq", "sed"])
 
     # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
     # hru_df = hru_df.astype(conv_types)
     sub_df = sub_df.loc[sub_df['mons'] < 13]
     sub_df['mons'] = sub_df['mons'].astype(int)
     sub_df['subs'] = sub_df['subs'].astype(int)
-
     return sub_df
 
 
+def read_output_sed(wd):
+    with open(os.path.join(wd, 'output.sed'), 'r') as f:
+        content = f.readlines()
+    subs = [int(i[5:10]) for i in content[1:]]
+    mons = [float(i[19:25]) for i in content[1:]]
+    seds = [float(i[49:61]) for i in content[1:]]
+
+    sed_df = pd.DataFrame(
+        np.column_stack([subs, mons, seds]),
+        columns=["subs","mons", "sed"])
+
+    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
+    # hru_df = hru_df.astype(conv_types)
+    sed_df = sed_df.loc[sed_df['mons'] < 13]
+    # sed_df['mons'] = sed_df['mons'].astype(int)
+    sed_df['subs'] = sed_df['subs'].astype(int)
+    return sed_df
+
+
+def read_output_rsv(wd):
+    with open(os.path.join(wd, 'output.rsv'), 'r') as f:
+        content = f.readlines()
+    subs = [int(i[5:14]) for i in content[9:]]
+    mons = [float(i[14:19]) for i in content[9:]]
+    flow = [float(i[43:55]) for i in content[9:]]
+    seds = [float(i[103:115]) for i in content[9:]]
+
+    sed_df = pd.DataFrame(
+        np.column_stack([subs, mons, flow, seds]),
+        columns=["subs","mons", "flow", "sed"])
+
+    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
+    # hru_df = hru_df.astype(conv_types)
+    sed_df = sed_df.loc[sed_df['mons'] < 13]
+    # sed_df['mons'] = sed_df['mons'].astype(int)
+    sed_df['subs'] = sed_df['subs'].astype(int)
+    return sed_df
+
+
+def read_output_rch(wd):
+    with open(os.path.join(wd, 'output.rch'), 'r') as f:
+        content = f.readlines()
+    subs = [int(i[5:10]) for i in content[9:]]
+    mons = [float(i[19:25]) for i in content[9:]]
+    flow = [float(i[49:61]) for i in content[9:]]
+    seds = [float(i[97:109]) for i in content[9:]]
+
+    sed_df = pd.DataFrame(
+        np.column_stack([subs, mons, flow, seds]),
+        columns=["subs","mons", "flow", "sed"])
+
+    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
+    # hru_df = hru_df.astype(conv_types)
+    sed_df = sed_df.loc[sed_df['mons'] < 13]
+    # sed_df['mons'] = sed_df['mons'].astype(int)
+    sed_df['subs'] = sed_df['subs'].astype(int)
+    return sed_df
 
 if __name__ == '__main__':
     wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
