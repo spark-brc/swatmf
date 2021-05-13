@@ -360,6 +360,32 @@ def read_output_sub(wd):
     return sub_df
 
 
+# NOTE: let's implement it in QSWATMOD
+def export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs):
+
+    filename = "swatmf_out_SWAT_gwsw_monthly"
+    data = np.loadtxt(
+                    os.path.join(wd, filename),
+                    skiprows=2,
+                    comments=["month:", "Layer"])
+    df = np.reshape(data[:, 1], (int(len(data)/nsubs), nsubs))
+    df2 = pd.DataFrame(df)
+    df2.index = pd.date_range(startDate, periods=len(df[:,0]), freq='M')
+    df2 = df2[scdate:ecdate]
+    mdf = df2.groupby(df2.index.month).mean()
+    mdf = mdf.T
+    mdf.columns = [
+                'Jan','Feb','Mar','Apr','May','Jun',
+                'Jul','Aug','Sep','Oct','Nov','Dec']
+
+    mdf.insert(0, "rchno", [x+1 for x in mdf.index] , True)
+    mdf.to_excel('{}.xlsx'.format(filename), index=False)
+    print(mdf)
+
+
+
+
+
 
 if __name__ == '__main__':
     # wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
@@ -369,6 +395,11 @@ if __name__ == '__main__':
     # obd_nam = 'sub_240_mohembo'
     # df = all_strs(wd, sub_number, start_date, obd_nam, time_step='M')
     
-    wd = "D:/Projects/Watersheds/Gunnison/Analysis/MODFLOW/mf_model_042621"
-    fname = "mf_1000.riv"
-    delete_duplicate_river_grids(wd, fname)
+    wd = "D:/Projects/Watersheds/Okavango/scenarios/okvg_swatmf_scn_rd_new"
+    nsubs = 257
+    scdate = '1/1/2003'
+    ecdate = '12/31/2019'
+    startDate = '1/1/2000'
+    # fname = "mf_1000.riv"
+    # delete_duplicate_river_grids(wd, fname)
+    export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs)
