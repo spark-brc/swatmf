@@ -91,9 +91,9 @@ def create_base_scn_pcp(
             print("  Combining base pcp and scenario pcp data in {} ... passed".format(n))
         except Exception as e:
                 raise Exception("unable to copy {} from model: " + \
-                                "to new worker dir: {1}\n{2}".format(f, new_pcp_dir, str(e)))     
+                                "to new worker dir: {1}\n{2}".format(f, new_pcp_dir, str(e)))  
 
-    print("  Done!")
+    print("... Done!")
 
 
 def _remove_readonly(func, path, excinfo):
