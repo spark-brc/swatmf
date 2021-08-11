@@ -93,7 +93,7 @@ def create_base_scn_pcp(
                 raise Exception("unable to copy {} from model: " + \
                                 "to new worker dir: {1}\n{2}".format(f, new_pcp_dir, str(e)))  
 
-    print("... Done!")
+    print("   Done!")
 
 
 def _remove_readonly(func, path, excinfo):
