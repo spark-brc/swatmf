@@ -3,12 +3,14 @@
 """
 
 import pandas as pd
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import os
+# from hydroeval import evaluator, nse, rmse, pbias
+# import numpy as np
 import numpy as np
-import matplotlib.pyplot as plt
-import os
-from hydroeval import evaluator, nse, rmse, pbias
-import numpy as np
-
+import h5py as hdf
+import os 
 
 def delete_duplicate_river_grids(wd, riv_fname):
     with open(os.path.join(wd, riv_fname), "r") as fp:
@@ -383,11 +385,17 @@ def export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs):
     print(mdf)
 
 
+def cvtHd5ToArray(wd, f):
 
-
+    hf = hdf.File(os.path.join(wd, f), 'r')
+    # data = hf.get('Arrays/top1').value
+    data = np.array(hf["River": 1])
+    hf.close()
+    return data
 
 
 if __name__ == '__main__':
+
     # wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
     # sub_number = 240
     # start_date = '1/1/2003'
@@ -395,11 +403,20 @@ if __name__ == '__main__':
     # obd_nam = 'sub_240_mohembo'
     # df = all_strs(wd, sub_number, start_date, obd_nam, time_step='M')
     
-    wd = "D:/Projects/Watersheds/Okavango/scenarios/okvg_swatmf_scn_rd_new"
-    nsubs = 257
-    scdate = '1/1/2003'
-    ecdate = '12/31/2019'
-    startDate = '1/1/2000'
-    # fname = "mf_1000.riv"
-    # delete_duplicate_river_grids(wd, fname)
-    export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs)
+    # wd = "D:/Projects/Watersheds/Okavango/scenarios/okvg_swatmf_scn_rd_new"
+    # nsubs = 257
+    # scdate = '1/1/2003'
+    # ecdate = '12/31/2019'
+    # startDate = '1/1/2000'
+    # # fname = "mf_1000.riv"
+    # # delete_duplicate_river_grids(wd, fname)
+    # export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs)
+
+
+    wd = "D:/Projects/Watersheds/Rezvane/mf_temp"
+    f = 'modflow.h5'
+    # a = cvtHd5ToArray(wd, f).reshape((94, 76))
+    # np.savetxt(os.path.join(wd, 'sy.ref'), a, delimiter='\t')   # X is an array
+    # print('ok...')
+    a = cvtHd5ToArray(wd, f)
+    print(a)

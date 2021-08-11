@@ -60,7 +60,8 @@ def read_pcp(pcp_path, nloc):
 
 def create_base_scn_pcp(
         nloc, base_file, scenario_dir, base_start_date, 
-        base_end_date, scn_start_date, scn_end_date, output_dir):
+        base_end_date, scn_start_date, scn_end_date, output_dir
+        ):
     base_df = read_pcp(base_file, nloc)
     base_df = base_df[base_start_date:base_end_date]
     wt_fds, full_paths = get_weather_folder_lists(scenario_dir)

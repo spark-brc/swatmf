@@ -83,7 +83,31 @@ def all_seds(wd, sub_number, start_date, obd_nam, time_step=None):
     return tot_df
 
 
-def str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
+def str_df(start_date, sub_number, time_step=None):
+    if time_step is None:
+        time_step = "D"
+        strobd_file = "streamflow.obd"
+    else:
+        time_step = "M"
+        strobd_file = "streamflow_month.obd."
+    df = pd.read_csv(
+                os.path.join("output.rch"),
+                delim_whitespace=True,
+                skiprows=9,
+                usecols=[1, 3, 6],
+                names=["date", "filter", "str_sim"],
+                index_col=0)
+    df = df.loc[sub_number]
+    if time_step == 'M':
+        df = df[df["filter"] < 13]
+    df = df.drop('filter', axis=1)
+    df.index = pd.date_range(start_date, periods=len(df.str_sim), freq=time_step)
+    
+    return df
+
+
+
+def apex_str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
     
     if time_step is None:
         time_step = "D"
