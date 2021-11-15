@@ -1,4 +1,4 @@
-""" PEST support visualizations: 02/09/2021 created by Seonggyu Park
+""" SWATMF support functions: 02/09/2021 created by Seonggyu Park
     last modified day: 02/21/2021 by Seonggyu Park
 """
 

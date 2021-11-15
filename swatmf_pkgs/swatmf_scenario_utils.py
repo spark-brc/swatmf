@@ -182,16 +182,18 @@ def execute_scenarios(
 def extract_scenario_results(
                     models_wd, result_files, model_results_wd=None, model_list=None, suffix=None,     
                     ):
+    os.chdir(models_wd)
     if suffix is None:
         suffix = '_results'
     if model_list is None:
-        os.chdir(models_wd)
-        model_nams = [name for name in os.listdir(".") if os.path.isdir(name)]
+        model_list = [name for name in os.listdir(".") if os.path.isdir(name)]
         model_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
+    else:
+        model_paths = [os.path.abspath(name) for name in model_list if os.path.isdir(name)]
     if model_results_wd is None:
         model_results_wd = '..'
     
-    for i , mp in zip(model_nams, model_paths):
+    for i , mp in tqdm(zip(model_list, model_paths)):
         model_result_dir = os.path.join(model_results_wd, "{}{}".format(i, suffix))
         if not os.path.exists(model_result_dir):
             os.mkdir(model_result_dir)
@@ -247,7 +249,7 @@ if __name__ == '__main__':
     models_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\models"
     weather_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\combined_base_scn_pcp"
     scn_wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\\scn_models"
-    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_model_results_2020-2050"
+    mrwd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_bau_model_results_2020-2050"
     result_files = [
         'output.rch',    
         'output.sub',
@@ -259,7 +261,13 @@ if __name__ == '__main__':
         'swatmf_out_SWAT_gwsw_monthly',
         'swatmf_out_SWAT_recharge_monthly'
         ]
-    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd)
+    scn_nams = ['ssp245', 'ssp585']
+    cc_nams = ['fgoals-g3', 'inm-cm5-0', 'miroc6', 'noresm2-lm' , 'ukesm1-0-ll']
+    model_list = []
+    for i in scn_nams:
+        for j in cc_nams:
+            model_list.append('bau_{}-{}'.format(i, j))
+    extract_scenario_results(scn_wd, result_files, model_results_wd=mrwd, model_list=model_list)
     # execute_scenarios(
     #         models_wd, weather_wd, scn_models_wd=scn_wd,
     #         reuse_models=True,

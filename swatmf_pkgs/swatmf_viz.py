@@ -147,7 +147,52 @@ def apex_str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
     return plot_df
 
 
-def str_plot(plot_df):
+def str_sim_obd(plot_df): # NOTE: temp for report
+
+    fig, ax = plt.subplots(figsize=(10, 3))
+    # ax.grid(True)
+    ax.plot(plot_df.index, plot_df.iloc[:, 0], label='Simulated', color='green', marker='^', alpha=0.7)
+    ax.scatter(
+        plot_df.index, plot_df.iloc[:, 1], label='Observed',
+        facecolors="None", edgecolors='red',
+        lw=1.5,
+        alpha=0.4,
+        )
+    ax.plot(plot_df.index, plot_df.iloc[:, 1], color='red', alpha=0.4, zorder=2,)
+    
+    ax.set_ylabel("Stream Discharge $(m^3/day)$",fontsize=14)
+
+    # ax.margins(y=0.2)
+    ax.tick_params(axis='both', labelsize=12)
+    
+    # add stats
+    org_stat = plot_df.dropna()
+    sim_org = org_stat.iloc[:, 0].to_numpy()
+    obd_org = org_stat.iloc[:, 1].to_numpy()
+    df_nse = evaluator(nse, sim_org, obd_org)
+    df_rmse = evaluator(rmse, sim_org, obd_org)
+    df_pibas = evaluator(pbias, sim_org, obd_org)
+    r_squared = (
+        ((sum((obd_org - obd_org.mean())*(sim_org-sim_org.mean())))**2)/
+        ((sum((obd_org - obd_org.mean())**2)* (sum((sim_org-sim_org.mean())**2))))
+        )    
+    ax.text(
+        0.95, -0.2,
+        'NSE: {:.2f} | RMSE: {:.2f} | PBIAS: {:.2f} | R-Squared: {:.2f}'.format(df_nse[0], df_rmse[0], df_pibas[0], r_squared),
+        horizontalalignment='right',fontsize=10,
+        bbox=dict(facecolor='green', alpha=0.5),
+        transform=ax.transAxes
+        )     
+    fig.tight_layout()
+    lines, labels = fig.axes[0].get_legend_handles_labels()
+    ax.legend(
+        lines, labels, loc = 'upper left', ncol=5,
+        # bbox_to_anchor=(0, 0.202),
+        fontsize=12)
+    # plt.legend()
+    plt.show()
+
+def str_plot(plot_df, prep=None): # NOTE: with precipitation data
 
     colnams = plot_df.columns.tolist()
     # plot
@@ -163,18 +208,20 @@ def str_plot(plot_df):
         # zorder=2,
         )
     ax.plot(plot_df.index, plot_df.iloc[:, 1], color='red', alpha=0.4, zorder=2,)
-    ax2=ax.twinx()
-    ax2.bar(
-        plot_df.index, plot_df.prep, label='Precipitation',
-        width=20,
-        color="blue", align='center', alpha=0.5, zorder=0)
-    ax2.set_ylabel("Precipitation $(mm)$",color="blue",fontsize=14)
-    ax.set_ylabel("Stream Discharge $(m^3/day)$",fontsize=14)
-    ax2.invert_yaxis()
-    ax2.set_ylim(plot_df.prep.max()*3, 0)
+    
+    if prep:
+        ax2=ax.twinx()
+        ax2.bar(
+            plot_df.index, plot_df.prep, label='Precipitation',
+            width=20,
+            color="blue", align='center', alpha=0.5, zorder=0)
+        ax2.set_ylabel("Precipitation $(mm)$",color="blue",fontsize=14)
+        ax2.invert_yaxis()
+        ax2.set_ylim(plot_df.prep.max()*3, 0)
+        ax.set_ylabel("Stream Discharge $(m^3/day)$",fontsize=14)
+        ax2.tick_params(axis='y', labelsize=12)    
     ax.margins(y=0.2)
     ax.tick_params(axis='both', labelsize=12)
-    ax2.tick_params(axis='y', labelsize=12)    
     
     # add stats
     org_stat = plot_df.dropna()

@@ -1,4 +1,3 @@
-# %%
 import pandas as pd
 import numpy as np
 import os
@@ -73,7 +72,7 @@ def read_tmp(tmp_path, nloc):
     df_max = pd.DataFrame(index=date)
     df_min = pd.DataFrame(index=date)
     max_start_num = 7
-    min_start_num = 13
+    min_start_num = 12
     for i in tqdm(range(nloc)):
         max_tmp = [float(i[max_start_num:max_start_num+5]) for i in content[4:]]
         max_start_num += 10
