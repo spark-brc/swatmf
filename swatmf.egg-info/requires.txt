@@ -1,0 +1,7 @@
+pandas
+numpy
+pyemu
+matplotlib
+hydroeval
+tqdm
+termcolor

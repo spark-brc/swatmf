@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: swatmf
+Version: 0.0.3
+Summary: SWAT-MODFLOW model
+Home-page: https://github.com/spark-brc/swatmf
+Author: Seonggyu Park
+Author-email: <envpsg@gmail.com>
+License: UNKNOWN
+Description: 
+        # SWAT-MODFLOW model
+Keywords: python,SWAT-MODFLOW,PEST
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Education
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
