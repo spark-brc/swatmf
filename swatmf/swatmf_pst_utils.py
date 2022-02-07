@@ -21,6 +21,9 @@ from termcolor import colored
 opt_files_path = os.path.join(
                     os.path.dirname(os.path.abspath( __file__ )),
                     'opt_files')
+foward_path = os.path.dirname(os.path.abspath( __file__ ))
+
+
 
 def create_swatmf_con(
                 wd, subs, grids, sim_start, cal_start, cal_end,
@@ -56,19 +59,23 @@ def create_swatmf_con(
         baseflow = 'y'
     col01 = [
         'wd', 'subs', 'grids', 'sim_start',
-        'cal_start', 'cal_end', 'time_step', 'riv_parm'
-        'depth_to_water', 'baseflow']
+        'cal_start', 'cal_end', 
+        'time_step', 'riv_parm',
+        'depth_to_water', 
+        'baseflow'
+        ]
     col02 = [
         wd, subs, grids, sim_start, 
-        cal_start, cal_end, time_step, riv_parm,
-        depth_to_water, baseflow
+        cal_start, cal_end, 
+        time_step, riv_parm,
+        depth_to_water,
+        baseflow
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
         f.write("# swatmf.con created by swamf\n")
         df.to_csv(f, sep='\t', encoding='utf-8', index=False, header=False)
-
-
+    return df
 
 def init_setup(wd, swatwd):
     filesToCopy = [
@@ -78,7 +85,7 @@ def init_setup(wd, swatwd):
         "i64pwtadj1.exe",
         "model.in",
         "SUFI2_LH_sample.exe",
-        "Swat_Edit.exe"
+        "Swat_Edit.exe",
         ]
     
     suffix = ' passed'
@@ -102,7 +109,9 @@ def init_setup(wd, swatwd):
         if not os.path.isfile(os.path.join(wd, j)):
             shutil.copy2(os.path.join(opt_files_path, j), os.path.join(wd, j))
             print(" '{}' file copied ...".format(j) + colored(suffix, 'green'))
-
+    if not os.path.isfile(os.path.join(wd, 'forward_run.py')):
+        shutil.copy2(os.path.join(foward_path, 'forward_run.py'), os.path.join(wd, 'forward_run.py'))
+        print(" '{}' file copied ...".format('forward_run.py') + colored(suffix, 'green'))        
 
 def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
     """extract a daily simulated streamflow from the output.rch file,

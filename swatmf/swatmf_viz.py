@@ -550,7 +550,6 @@ def y_fmt(y, pos):
                         return '{val:d}'.format(val=int(round(val)), suffix=suffix[i]) 
                 tx = "{"+"val:.{signf}f".format(signf = signf) +"} {suffix}"
                 return tx.format(val=val, suffix=suffix[i])
-
                 #return y
     return y
 
@@ -680,13 +679,19 @@ def read_output_rch(wd):
     sed_df['subs'] = sed_df['subs'].astype(int)
     return sed_df
 
-if __name__ == '__main__':
-    wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_calibrated_base_new_res"
-    sub_number = 240
-    start_date = '1/1/2000'
-    end_date = '12/31/2000'
-    obd_nam = 'sub_240_mohembo'
-    os.chdir(wd)
-    df = str_df(start_date, sub_number, time_step='M')
-    # df = str_df(wd, sub_number, start_date, obd_nam, time_step='M')
-    print(df)
+
+def phi_progress_plot(filename):
+    rec_file = filename[:-3] + 'rec' 
+    with open(rec_file, "r") as f:
+        model_calls = []
+        phis = []
+        for line in f.readlines():
+            if line.strip().startswith("Model calls so far"):
+                model_calls.append(int(line.replace('\n', '').split()[5]))
+            if line.strip().startswith("Starting phi for this iteration"):
+                phis.append(float(line.replace('\n', '').split()[6]))
+    
+    df = pd.DataFrame({'Model Runs': model_calls, 'Phi': phis})
+    df = df.set_index('Model Runs')
+    df.plot(figsize=(5,5), grid=True)
+

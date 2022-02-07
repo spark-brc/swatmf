@@ -62,7 +62,7 @@ def forward_run(
 if __name__ == '__main__':
     cwd = os.getcwd()
     os.chdir(cwd)
-    swatmf_con = pd.read_csv('swatmf.con', sep='\t',usecols=['names', 'vals'], index_col=0, comment="#")
+    swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")
     wd = swatmf_con.loc['wd', 'vals']
     subs = swatmf_con.loc['subs','vals'].strip('][').split(', ')
     subs = [int(i) for i in subs]

@@ -680,6 +680,25 @@ def read_output_rch(wd):
     sed_df['subs'] = sed_df['subs'].astype(int)
     return sed_df
 
+
+def phi_progress_plot(filename):
+    rec_file = filename[:-3] + 'rec' 
+    with open(rec_file, "r") as f:
+        model_calls = []
+        phis = []
+        for line in f.readlines():
+            if line.strip().startswith("Model calls so far"):
+                model_calls.append(int(line.replace('\n', '').split()[5]))
+            if line.strip().startswith("Starting phi for this iteration"):
+                phis.append(float(line.replace('\n', '').split()[6]))
+    
+    df = pd.DataFrame({'Model Runs': model_calls, 'Phi': phis})
+    df = df.set_index('Model Runs')
+    df.plot(figsize=(5,5), grid=True)
+
+
+
+
 if __name__ == '__main__':
     wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_calibrated_base_new_res"
     sub_number = 240
