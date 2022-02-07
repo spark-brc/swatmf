@@ -12,8 +12,8 @@ with open("README.rst", "r") as fd:
     long_desc = fd.read()
 
 
-VERSION = '0.0.5'
-DESCRIPTION = 'swatmf is a set of python modules for SWAT-MODFLOW model'
+VERSION = '0.0.8'
+DESCRIPTION = 'swatmf is a set of python modules for SWAT-MODFLOW model evaluation and parameter estimation.'
 # LONG_DESCRIPTION = 'A package that allows to work with SWAT-MODFLOW model'
 
 license = "BSD-3-Clause"

@@ -1,9 +1,6 @@
-"""pyEMU: python modules for Environmental Model Uncertainty analyses.  These
-modules are designed to work directly and seamlessly with PEST and PEST++ model
-independent interface.  pyEMU can also be used to setup this interface.
-Several forms of uncertainty analyses are support including FOSM-based
-analyses (pyemu.Schur and pyemu.ErrVar), data worth analyses and
-high-dimensional ensemble generation.
+"""swatmf: a set of python modules for SWAT-MODFLOW model (Bailey et al., 2016)
+parameter estimation and uncertainty analysis with the open-source suite PEST (Doherty 2010a
+and 2010b, and Doherty and other, 2010).
 """
 
 from .swatmf_utils import *

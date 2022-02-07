@@ -1,6 +1,6 @@
 LICENSE
 MANIFEST.in
-README.md
+README.rst
 setup.py
 notebooks/__init__.py
 swatmf/__init__.py
