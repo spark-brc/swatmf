@@ -4,7 +4,6 @@ README.md
 setup.py
 notebooks/__init__.py
 swatmf/__init__.py
-swatmf/apexmf_pst_viz.py
 swatmf/cvt_gcm_pcp.py
 swatmf/forward_run.py
 swatmf/gcm_analysis.py

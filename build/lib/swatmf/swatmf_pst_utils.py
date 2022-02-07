@@ -75,6 +75,7 @@ def create_swatmf_con(
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
         f.write("# swatmf.con created by swamf\n")
         df.to_csv(f, sep='\t', encoding='utf-8', index=False, header=False)
+    return df
 
 def init_setup(wd, swatwd):
     filesToCopy = [

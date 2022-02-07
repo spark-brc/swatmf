@@ -1,22 +1,50 @@
 Metadata-Version: 2.1
 Name: swatmf
-Version: 0.0.4
-Summary: SWAT-MODFLOW model
-Home-page: https://github.com/spark-brc/swatmf
+Version: 0.0.5
+Summary: swatmf is a set of python modules for SWAT-MODFLOW model
+Download-URL: https://pypi.org/project/swatmf
 Author: Seonggyu Park
 Author-email: <envpsg@gmail.com>
 License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/spark-brc/swatmf/issues
+Project-URL: Source Code, https://github.com/spark-brc/swatmf
+Project-URL: Documentation, https://github.com/spark-brc/swatmf
 Keywords: python,SWAT-MODFLOW,PEST
 Platform: UNKNOWN
-Classifier: Development Status :: 1 - Planning
+Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Education
-Classifier: Programming Language :: Python :: 3
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
 Classifier: Operating System :: Microsoft :: Windows
-Classifier: License :: OSI Approved :: MIT License
-Requires-Python: >=3.7
+Classifier: License :: OSI Approved :: BSD License
 Description-Content-Type: text/markdown
 License-File: LICENSE
 
 
-# SWAT-MODFLOW model
+swatmf
+===
+swatmf is a set of python modules for SWAT-MODFLOW model (Bailey et al., 2016) parameter estimation and uncertainty analysis with the open-source suite PEST (Doherty 2010a and 2010b, and Doherty and other, 2010).
+```shell
+pip install swatmf
+```
+
+```python
+from swatmf import swatmf_pst_utils, swatmf_pst_par, swatmf_viz
+
+wd = "User-SWAT-MODFLOW working directory"
+swat_wd = "User-SWAT working directory"
+swatmf_pst_utils.init_setup(wd, swat_wd)
+```
+>>> 
+```bash
+Creating 'backup' folder ... passed
+Creating 'echo' folder ... passed
+Creating 'sufi2.in' folder ... passed
+'beopest64.exe' file copied ... passed
+'i64pest.exe' file copied ... passed
+'i64pwtadj1.exe' file copied ... passed
+'forward_run.py' file copied ... passed
+```
 
