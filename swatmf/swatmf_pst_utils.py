@@ -2,6 +2,7 @@
     last modified day: 09/14/2020 by Seonggyu Park
 """
 
+from lib2to3.pgen2.token import NEWLINE
 import pandas as pd
 import numpy as np
 import time
@@ -16,9 +17,58 @@ from termcolor import colored
 # from colorama import init
 # from colorama import Fore, Style
 
+
 opt_files_path = os.path.join(
                     os.path.dirname(os.path.abspath( __file__ )),
                     'opt_files')
+
+def create_swatmf_con(
+                wd, subs, grids, sim_start, cal_start, cal_end,
+                time_step=None, riv_parm=None, depth_to_water=None, baseflow=None
+                ):
+    """[summary]
+
+    Args:
+        wd ([type]): [description]
+        subs ([type]): [description]
+        grids ([type]): [description]
+        sim_start ([type]): [description]
+        cal_start ([type]): [description]
+        cal_end ([type]): [description]
+        time_step ([type], optional): [description]. Defaults to None.
+        riv_parm ([type], optional): [description]. Defaults to None.
+        depth_to_water ([type], optional): [description]. Defaults to None.
+        baseflow ([type], optional): [description]. Defaults to None.
+    """
+    if time_step is None:
+        time_step = 'day'
+    if riv_parm is None:
+        riv_parm = 'n'
+    else:
+        riv_parm = 'y'
+    if depth_to_water is None:
+        depth_to_water ='n'
+    else:
+        depth_to_water = 'y'
+    if baseflow is None:
+        baseflow = 'n'
+    else:
+        baseflow = 'y'
+    col01 = [
+        'wd', 'subs', 'grids', 'sim_start',
+        'cal_start', 'cal_end', 'time_step', 'riv_parm'
+        'depth_to_water', 'baseflow']
+    col02 = [
+        wd, subs, grids, sim_start, 
+        cal_start, cal_end, time_step, riv_parm,
+        depth_to_water, baseflow
+        ]
+    df = pd.DataFrame({'names': col01, 'vals': col02})
+    with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
+        f.write("# swatmf.con created by swamf\n")
+        df.to_csv(f, sep='\t', encoding='utf-8', index=False, header=False)
+
+
 
 def init_setup(wd, swatwd):
     filesToCopy = [
@@ -54,10 +104,7 @@ def init_setup(wd, swatwd):
             print(" '{}' file copied ...".format(j) + colored(suffix, 'green'))
 
 
-
-
-
-def extract_day_str(rch_file, channels, start_day, cali_start_day, cali_end_day):
+def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
     """extract a daily simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -70,7 +117,7 @@ def extract_day_str(rch_file, channels, start_day, cali_start_day, cali_end_day)
     Example:
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
-
+    rch_file = 'output.rch'
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
@@ -84,12 +131,12 @@ def extract_day_str(rch_file, channels, start_day, cali_start_day, cali_end_day)
         sim_stf_f = sim_stf_f.drop(['filter'], axis=1)
         sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.str_sim))
         sim_stf_f = sim_stf_f[cali_start_day:cali_end_day]
-        sim_stf_f.to_csv('cha_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
-        print('cha_{:03d}.txt file has been created...'.format(i))
+        sim_stf_f.to_csv('str_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
+        print('str_{:03d}.txt file has been created...'.format(i))
     print('Finished ...')
 
 
-def extract_month_str(rch_file, channels, start_day, cali_start_day, cali_end_day):
+def extract_month_str(channels, start_day, cali_start_day, cali_end_day):
     """extract a simulated streamflow from the output.rch file,
        store it in each channel file.
 
@@ -102,7 +149,7 @@ def extract_month_str(rch_file, channels, start_day, cali_start_day, cali_end_da
     Example:
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
-
+    rch_file = 'output.rch'
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
@@ -117,12 +164,12 @@ def extract_month_str(rch_file, channels, start_day, cali_start_day, cali_end_da
         sim_stf_f = sim_stf_f.drop(['filter'], axis=1)
         sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.str_sim), freq='M')
         sim_stf_f = sim_stf_f[cali_start_day:cali_end_day]
-        sim_stf_f.to_csv('cha_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
-        print('cha_{:03d}.txt file has been created...'.format(i))
+        sim_stf_f.to_csv('str_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
+        print('str_{:03d}.txt file has been created...'.format(i))
     print('Finished ...')
 
 
-def extract_month_baseflow(sub_file, channels, start_day, cali_start_day, cali_end_day):
+def extract_month_baseflow(channels, start_day, cali_start_day, cali_end_day):
     """ extract a simulated baseflow rates from the output.sub file,
         store it in each channel file.
 
@@ -135,6 +182,7 @@ def extract_month_baseflow(sub_file, channels, start_day, cali_start_day, cali_e
     Example:
         sm_pst_utils.extract_month_baseflow('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
+    sub_file = 'output.sub' 
     gwqs = []
     subs = []
     for i in channels:
@@ -174,7 +222,7 @@ def extract_month_baseflow(sub_file, channels, start_day, cali_start_day, cali_e
     print('Finished ...\n')
 
 
-def extract_watertable_sim(grid_ids, start_day, end_day):
+def extract_depth_to_water(grid_ids, start_day, end_day):
     """extract a simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -185,7 +233,7 @@ def extract_watertable_sim(grid_ids, start_day, end_day):
         - end_day ('str'): simulation end day e.g. '12/31/2000'
 
     Example:
-        pest_utils.extract_month_str('path', [9, 60], '1/1/1993', '12/31/2000')
+        pest_utils.extract_depth_to_water('path', [9, 60], '1/1/1993', '12/31/2000')
     """
     if not os.path.exists('swatmf_out_MF_obs'):
         raise Exception("'swatmf_out_MF_obs' file not found")
@@ -213,13 +261,14 @@ def extract_watertable_sim(grid_ids, start_day, end_day):
     for i in grid_ids:
         elev = mf_obs_grid_ids.loc[i].values  # use land surface elevation to get depth to water
         (mf_sim.loc[:, i] - elev).to_csv(
-                        'wt_{}.txt'.format(i), sep='\t', encoding='utf-8',
+                        'dtw_{}.txt'.format(i), sep='\t', encoding='utf-8',
                         index=True, header=False, float_format='%.7e'
                         )
-        print('wt_{}.txt file has been created...'.format(i))
+        print('dtw_{}.txt file has been created...'.format(i))
+    print('Finished ...')
 
 
-def str_obd_to_ins(srch_file, col_name, start_day, end_day, time_step=None):
+def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     """extract a simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -235,16 +284,20 @@ def str_obd_to_ins(srch_file, col_name, start_day, end_day, time_step=None):
     """ 
     if time_step is None:
         time_step = 'day'
+        stfobd_file = 'stf_day.obd'
+    if time_step == 'month':
+        stfobd_file = 'stf_mon.obd'
+
 
     stf_obd = pd.read_csv(
-                        'streamflow.obd',
+                        stfobd_file,
                         sep='\t',
                         usecols=['date', col_name],
                         index_col=0,
                         parse_dates=True,
                         na_values=[-999, '']
                         )
-    stf_obd = stf_obd[start_day:end_day]
+    stf_obd = stf_obd[cal_start:cal_end]
 
     stf_sim = pd.read_csv(
                         srch_file,
@@ -279,7 +332,7 @@ def str_obd_to_ins(srch_file, col_name, start_day, end_day, time_step=None):
     return result['{}_ins'.format(col_name)]
 
 
-def mf_obd_to_ins(wt_file, col_name, start_day, end_day):
+def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
     """extract a simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -300,7 +353,7 @@ def mf_obd_to_ins(wt_file, col_name, start_day, end_day):
                         index_col=0,
                         parse_dates=True,
                         )
-    mf_obd = mf_obd[start_day:end_day]
+    mf_obd = mf_obd[cal_start:cal_end]
 
     wt_sim = pd.read_csv(
                         wt_file,
@@ -373,7 +426,7 @@ def extract_month_avg(cha_file, channels, start_day, cal_day=None, end_day=None)
         return mdf
 
 
-def model_in_to_template_file(model_in_file, tpl_file=None):
+def model_in_to_template_file(tpl_file=None):
     """write a template file for a SWAT parameter value file (model.in).
 
     Args:
@@ -389,7 +442,7 @@ def model_in_to_template_file(model_in_file, tpl_file=None):
     Returns:
         **pandas.DataFrame**: a dataFrame with template file information
     """
-
+    model_in_file = 'model.in'
     if tpl_file is None:
         tpl_file = model_in_file + ".tpl"
     mod_df = pd.read_csv(
