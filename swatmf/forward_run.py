@@ -2,9 +2,8 @@ import os
 from datetime import datetime
 import pyemu
 import pandas as pd
-from swatmf_pst_par import riv_par
-from swatmf_pst_utils import extract_day_stf, extract_depth_to_water, extract_month_str, extract_month_baseflow
-
+from swatmf import swatmf_pst_par
+from swatmf import swatmf_pst_utils
 
 def forward_run(
                 subs, grids, sim_start, cal_start, cal_end, 
@@ -18,7 +17,7 @@ def forward_run(
         print('\n' + 30*'+ ')
         print(time + ' |  updating river parameters...')
         print(30*'+ ' + '\n')
-        riv_par(wd)
+        swatmf_pst_par.riv_par(wd)
 
     # if time_step == 'day':
 
@@ -40,21 +39,21 @@ def forward_run(
     print(time + ' | simulation successfully completed | extracting simulated values...')
     print(35*'+ ' + '\n')
     if time_step == 'day':
-        extract_day_stf(subs, sim_start, cal_start, cal_end)
+        swatmf_pst_utils.extract_day_stf(subs, sim_start, cal_start, cal_end)
     elif time_step == 'month':
-        extract_month_str(subs, sim_start, cal_start, cal_end)
+        swatmf_pst_utils.extract_month_str(subs, sim_start, cal_start, cal_end)
 
     if depth_to_water == 'y':
         print('\n' + 35*'+ ')
         print(time + ' | simulation successfully completed | extracting depth to water values...')
         print(35*'+ ' + '\n')        
-        extract_depth_to_water(grids, sim_start, cal_end)
+        swatmf_pst_utils.extract_depth_to_water(grids, sim_start, cal_end)
     
     if baseflow == 'y':
         print('\n' + 35*'+ ')
         print(time + ' | simulation successfully completed | calculating baseflow ratio...')
         print(35*'+ ' + '\n')
-        extract_month_baseflow(subs, sim_start, cal_start, cal_end)
+        swatmf_pst_utils.extract_month_baseflow(subs, sim_start, cal_start, cal_end)
 
 
     # extract_watertable_sim([5699, 5832], '1/1/1980', '12/31/2005')

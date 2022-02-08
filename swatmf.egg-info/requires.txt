@@ -1,6 +1,8 @@
 pandas
 numpy
 pyemu
+flopy
+scipy
 matplotlib
 hydroeval
 tqdm
