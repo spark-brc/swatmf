@@ -7,6 +7,7 @@ from .swatmf_utils import *
 from .swatmf_viz import *
 from .swatmf_pst_utils import *
 from .swatmf_pst_par import *
+from .version import __version__
 # from .swatmf_pst_stats import *
 
 

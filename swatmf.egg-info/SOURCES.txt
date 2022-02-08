@@ -14,6 +14,7 @@ swatmf/swatmf_pst_utils.py
 swatmf/swatmf_scenario_utils.py
 swatmf/swatmf_utils.py
 swatmf/swatmf_viz.py
+swatmf/version.py
 swatmf.egg-info/PKG-INFO
 swatmf.egg-info/SOURCES.txt
 swatmf.egg-info/dependency_links.txt

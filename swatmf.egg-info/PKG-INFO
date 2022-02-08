@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: swatmf
-Version: 0.0.8
+Version: 0.0.10
 Summary: swatmf is a set of python modules for SWAT-MODFLOW model evaluation and parameter estimation.
 Download-URL: https://pypi.org/project/swatmf
 Author: Seonggyu Park
@@ -59,7 +59,7 @@ swatmf
    'beopest64.exe' file copied ... passed
    'i64pest.exe' file copied ... passed
    'i64pwtadj1.exe' file copied ... passed
-   'forward_run.py' file copied ... passedns)
+   'forward_run.py' file copied ... passed
 
 
 

@@ -29,19 +29,22 @@ def create_swatmf_con(
                 wd, subs, grids, sim_start, cal_start, cal_end,
                 time_step=None, riv_parm=None, depth_to_water=None, baseflow=None
                 ):
-    """[summary]
+    """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
 
     Args:
-        wd ([type]): [description]
-        subs ([type]): [description]
-        grids ([type]): [description]
-        sim_start ([type]): [description]
-        cal_start ([type]): [description]
-        cal_end ([type]): [description]
-        time_step ([type], optional): [description]. Defaults to None.
-        riv_parm ([type], optional): [description]. Defaults to None.
-        depth_to_water ([type], optional): [description]. Defaults to None.
-        baseflow ([type], optional): [description]. Defaults to None.
+        wd (`str`): SWAT-MODFLOW working directory
+        subs (`list`): reach numbers to be extracted
+        grids (`list`): grid numbers to be extracted
+        sim_start (`str`): simulation start date (after warm-up period) e.g. '1/1/2000'
+        cal_start (`str`): calibration start date e.g., '1/1/2001'
+        cal_end (`str`): calibration end date e.g., '12/31/2005'
+        time_step (`str`, optional): model time step. Defaults to None ('day'). e.g., 'day', 'month', 'year'
+        riv_parm (`str`, optional): river parameter activation. Defaults to None ('n').
+        depth_to_water (`str`, optional): extracting simulated depth to water activation. Defaults to None ('n').
+        baseflow (`str`, optional): extracting baseflow ratio activation. Defaults to None ('n').
+
+    Returns:
+        dataframe: return SWAT-MODFLOW PEST configure settings as dataframe and exporting it as swatmf.con file.
     """
     if time_step is None:
         time_step = 'day'
