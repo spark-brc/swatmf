@@ -6,7 +6,7 @@ import pandas as pd
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import os
-# from hydroeval import evaluator, nse, rmse, pbias
+from hydroeval import evaluator, nse, rmse, pbias
 # import numpy as np
 import numpy as np
 # import h5py as hdf
