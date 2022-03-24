@@ -26,7 +26,7 @@ foward_path = os.path.dirname(os.path.abspath( __file__ ))
 
 
 def create_swatmf_con(
-                wd, sim_start, cal_start, cal_end,
+                wd, sim_start, warm, cal_start, cal_end,
                 subs=None, grids=None, riv_parm=None,
                 baseflow=None,
                 time_step=None, 
@@ -38,7 +38,8 @@ def create_swatmf_con(
         wd (`str`): SWAT-MODFLOW working directory
         subs (`list`): reach numbers to be extracted
         grids (`list`): grid numbers to be extracted
-        sim_start (`str`): simulation start date (after warm-up period) e.g. '1/1/2000'
+        sim_start (`str`): simulation start date e.g. '1/1/2000'
+        warm(`int`): warm-up period
         cal_start (`str`): calibration start date e.g., '1/1/2001'
         cal_end (`str`): calibration end date e.g., '12/31/2005'
         time_step (`str`, optional): model time step. Defaults to None ('day'). e.g., 'day', 'month', 'year'
@@ -64,14 +65,14 @@ def create_swatmf_con(
     else:
         baseflow = 'y'
     col01 = [
-        'wd', 'sim_start', 'cal_start', 'cal_end',
+        'wd', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
         'subs', 'grids',
         'riv_parm', 'baseflow',
         'time_step',
         'pp_included'
         ]
     col02 = [
-        wd, sim_start, cal_start, cal_end, 
+        wd, sim_start, warm, cal_start, cal_end, 
         subs, grids,
         riv_parm, baseflow,
         time_step,
@@ -119,7 +120,7 @@ def init_setup(wd, swatwd):
         shutil.copy2(os.path.join(foward_path, 'forward_run.py'), os.path.join(wd, 'forward_run.py'))
         print(" '{}' file copied ...".format('forward_run.py') + colored(suffix, 'green'))        
 
-def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
+def extract_day_stf(channels, start_day, warm, cali_start_day, cali_end_day):
     """extract a daily simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -132,6 +133,10 @@ def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
     Example:
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
+    rch_file = 'output.rch'
+    start_day =  start_day[:-4] + str(int(start_day[-4:])+warm)
+
+
     rch_file = 'output.rch'
     for i in channels:
         sim_stf = pd.read_csv(
@@ -151,7 +156,7 @@ def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
     print('Finished ...')
 
 
-def extract_month_stf(channels, start_day, cali_start_day, cali_end_day):
+def extract_month_stf(channels, start_day, warm, cali_start_day, cali_end_day):
     """extract a simulated streamflow from the output.rch file,
        store it in each channel file.
 
@@ -165,6 +170,7 @@ def extract_month_stf(channels, start_day, cali_start_day, cali_end_day):
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
     rch_file = 'output.rch'
+    start_day =  start_day[:-4] + str(int(start_day[-4:])+warm)
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
