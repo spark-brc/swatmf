@@ -43,15 +43,15 @@ def execute_swatmf():
     # pyemu.os_utils.run('APEX-MODFLOW3.exe >_s+m.stdout', cwd='.')
     pyemu.os_utils.run('SWAT-MODFLOW3', cwd='.')
 
-def extract_stf_results(subs, sim_start, cal_start, cal_end):
+def extract_stf_results(subs, sim_start, warmup, cal_start, cal_end):
     if time_step == 'day':
         des = "simulation successfully completed | extracting daily simulated streamflow"
         time_stamp(des)
-        swatmf_pst_utils.extract_day_stf(subs, sim_start, cal_start, cal_end)
+        swatmf_pst_utils.extract_day_stf(subs, sim_start, warmup, cal_start, cal_end)
     elif time_step == 'month':
         des = "simulation successfully completed | extracting monthly simulated streamflow"
         time_stamp(des)
-        swatmf_pst_utils.extract_month_stf(subs, sim_start, cal_start, cal_end)
+        swatmf_pst_utils.extract_month_stf(subs, sim_start, warmup, cal_start, cal_end)
 
 def extract_gw_level_results(grids, sim_start, cal_end):
     des = "simulation successfully completed | extracting depth to water values"
@@ -71,6 +71,7 @@ if __name__ == '__main__':
     # get default vals
     wd = swatmf_con.loc['wd', 'vals']
     sim_start = swatmf_con.loc['sim_start', 'vals']
+    warmup = swatmf_con.loc['warm-up', 'vals']
     cal_start = swatmf_con.loc['cal_start', 'vals']
     cal_end = swatmf_con.loc['cal_end', 'vals']
     cha_act = swatmf_con.loc['subs','vals']
@@ -95,7 +96,7 @@ if __name__ == '__main__':
     if swatmf_con.loc['subs', 'vals'] != 'n':
         subs = swatmf_con.loc['subs','vals'].strip('][').split(', ')
         subs = [int(i) for i in subs]
-        extract_stf_results(subs, sim_start, cal_start, cal_end)
+        extract_stf_results(subs, sim_start, warmup, cal_start, cal_end)
     if swatmf_con.loc['grids', 'vals'] != 'n':
         grids = swatmf_con.loc['grids','vals'].strip('][').split(', ')
         grids = [int(i) for i in grids]        

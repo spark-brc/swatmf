@@ -136,7 +136,6 @@ def extract_day_stf(channels, start_day, warm, cali_start_day, cali_end_day):
     rch_file = 'output.rch'
     start_day =  start_day[:-4] + str(int(start_day[-4:])+warm)
 
-
     rch_file = 'output.rch'
     for i in channels:
         sim_stf = pd.read_csv(
@@ -170,7 +169,7 @@ def extract_month_stf(channels, start_day, warm, cali_start_day, cali_end_day):
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
     rch_file = 'output.rch'
-    start_day =  start_day[:-4] + str(int(start_day[-4:])+warm)
+    start_day =  start_day[:-4] + str(int(start_day[-4:]) + warm)
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
