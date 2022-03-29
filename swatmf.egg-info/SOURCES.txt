@@ -2,7 +2,6 @@ LICENSE
 MANIFEST.in
 README.rst
 setup.py
-notebooks/__init__.py
 swatmf/__init__.py
 swatmf/cvt_gcm_pcp.py
 swatmf/forward_run.py

@@ -26,8 +26,11 @@ foward_path = os.path.dirname(os.path.abspath( __file__ ))
 
 
 def create_swatmf_con(
-                wd, subs, grids, sim_start, cal_start, cal_end,
-                time_step=None, riv_parm=None, depth_to_water=None, baseflow=None
+                wd, sim_start, warmup, cal_start, cal_end,
+                subs=None, grids=None, riv_parm=None,
+                baseflow=None,
+                time_step=None, 
+                pp_included=None
                 ):
     """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
 
@@ -35,7 +38,8 @@ def create_swatmf_con(
         wd (`str`): SWAT-MODFLOW working directory
         subs (`list`): reach numbers to be extracted
         grids (`list`): grid numbers to be extracted
-        sim_start (`str`): simulation start date (after warm-up period) e.g. '1/1/2000'
+        sim_start (`str`): simulation start date e.g. '1/1/2000'
+        warmup(`int`): warm-up period
         cal_start (`str`): calibration start date e.g., '1/1/2001'
         cal_end (`str`): calibration end date e.g., '12/31/2005'
         time_step (`str`, optional): model time step. Defaults to None ('day'). e.g., 'day', 'month', 'year'
@@ -46,33 +50,33 @@ def create_swatmf_con(
     Returns:
         dataframe: return SWAT-MODFLOW PEST configure settings as dataframe and exporting it as swatmf.con file.
     """
-    if time_step is None:
-        time_step = 'day'
+    if subs is None:
+        subs = 'n'
+    if grids is None:
+        grids = 'n'
     if riv_parm is None:
         riv_parm = 'n'
     else:
         riv_parm = 'y'
-    if depth_to_water is None:
-        depth_to_water ='n'
-    else:
-        depth_to_water = 'y'
+    if time_step is None:
+        time_step = 'day'
     if baseflow is None:
         baseflow = 'n'
     else:
         baseflow = 'y'
     col01 = [
-        'wd', 'subs', 'grids', 'sim_start',
-        'cal_start', 'cal_end', 
-        'time_step', 'riv_parm',
-        'depth_to_water', 
-        'baseflow'
+        'wd', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
+        'subs', 'grids',
+        'riv_parm', 'baseflow',
+        'time_step',
+        'pp_included'
         ]
     col02 = [
-        wd, subs, grids, sim_start, 
-        cal_start, cal_end, 
-        time_step, riv_parm,
-        depth_to_water,
-        baseflow
+        wd, sim_start, warmup, cal_start, cal_end, 
+        subs, grids,
+        riv_parm, baseflow,
+        time_step,
+        pp_included
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
@@ -116,19 +120,22 @@ def init_setup(wd, swatwd):
         shutil.copy2(os.path.join(foward_path, 'forward_run.py'), os.path.join(wd, 'forward_run.py'))
         print(" '{}' file copied ...".format('forward_run.py') + colored(suffix, 'green'))        
 
-def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
+def extract_day_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
     """extract a daily simulated streamflow from the output.rch file,
         store it in each channel file.
 
     Args:
         - rch_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1985'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1985'
         - end_day ('str'): simulation end day e.g. '12/31/2005'
 
     Example:
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
+    rch_file = 'output.rch'
+    start_day =  start_day[:-4] + str(int(start_day[-4:])+ int(warmup))
+
     rch_file = 'output.rch'
     for i in channels:
         sim_stf = pd.read_csv(
@@ -148,20 +155,21 @@ def extract_day_stf(channels, start_day, cali_start_day, cali_end_day):
     print('Finished ...')
 
 
-def extract_month_str(channels, start_day, cali_start_day, cali_end_day):
+def extract_month_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
     """extract a simulated streamflow from the output.rch file,
        store it in each channel file.
 
     Args:
         - rch_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1985'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1985'
         - end_day ('str'): simulation end day e.g. '12/31/2005'
 
     Example:
         sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
     rch_file = 'output.rch'
+    start_day =  start_day[:-4] + str(int(start_day[-4:]) + int(warmup))
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
@@ -188,7 +196,7 @@ def extract_month_baseflow(channels, start_day, cali_start_day, cali_end_day):
     Args:
         - sub_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1985'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1985'
         - end_day ('str'): simulation end day e.g. '12/31/2005'
 
     Example:
@@ -241,7 +249,7 @@ def extract_depth_to_water(grid_ids, start_day, end_day):
     Args:
         - rch_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1985'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1985'
         - end_day ('str'): simulation end day e.g. '12/31/2000'
 
     Example:
@@ -287,7 +295,7 @@ def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     Args:
         - rch_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1993'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1993'
         - end_day ('str'): simulation end day e.g. '12/31/2000'
         - time_step (`str`): day, month, year
 
@@ -351,7 +359,7 @@ def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
     Args:
         - rch_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1993'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1993'
         - end_day ('str'): simulation end day e.g. '12/31/2000'
 
     Example:
@@ -363,6 +371,7 @@ def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
                         sep='\t',
                         usecols=['date', col_name],
                         index_col=0,
+                        na_values=[-999, ""],
                         parse_dates=True,
                         )
     mf_obd = mf_obd[cal_start:cal_end]
@@ -402,7 +411,7 @@ def extract_month_avg(cha_file, channels, start_day, cal_day=None, end_day=None)
     Args:
         - cha_file (`str`): the path and name of the existing output file
         - channels (`list`): channel number in a list, e.g. [9, 60]
-        - start_day ('str'): simulation start day after warm period, e.g. '1/1/1993'
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1993'
         - end_day ('str'): simulation end day e.g. '12/31/2000'
 
     Example:
@@ -687,4 +696,17 @@ def execute_workers(
         os.chdir(cwd)
         os.system("start cmd /k beopest64 {0} /h {1}".format(pst, tcp_arg))
 
+
+def cvt_stf_day_month_obd(obd_file):
+    # create stf_mon.obd
+    stf_obd = pd.read_csv(
+                        obd_file,
+                        sep='\t',
+                        # usecols=['date', 'sub_37'],
+                        index_col=0,
+                        parse_dates=True,
+                        na_values=[-999, '']
+                        )
+    stf_obd = stf_obd.resample('M').mean()
+    stf_obd.to_csv('stf_mon.obd', sep='\t', float_format='%.7e')
 

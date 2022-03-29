@@ -56,7 +56,7 @@ def riv_par(wd):
     Args:
         - wd (`str`): the path and name of the existing output file
     Reqs:
-        - 'modflow.par'
+        - 'mf_riv.par'
     Opts:
         - 'riv_package.org'
     Vars:
@@ -81,6 +81,7 @@ def riv_par(wd):
             line2 = f.readline()
             line3 = f.readline()
 
+        # BUG: change hard code skiprows = 3 
         # read riv pacakge
         df_riv = pd.read_csv('riv_package.org', sep=r'\s+', skiprows=3, header=None)
 

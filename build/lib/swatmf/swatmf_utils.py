@@ -6,7 +6,7 @@ import pandas as pd
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import os
-from hydroeval import evaluator, nse, rmse, pbias
+# from hydroeval import evaluator, nse, rmse, pbias
 # import numpy as np
 import numpy as np
 # import h5py as hdf
@@ -395,34 +395,31 @@ def export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs):
 #     return data
 
 
+def cvt_bas_array(wd, infile, nrows, ncols):
+
+    with open(os.path.join(wd, infile), 'r') as f:
+        data = []
+        for line in f.readlines():
+            if not line.startswith("#"):
+                data.append(line.replace('\n', '').split())
+
+    ii = 2 # starting line
+    bas = []
+    while data[ii][0] != "INTERNAL":
+        for j in range(len(data[ii])):
+            bas.append(int(data[ii][j]))
+        ii += 1
+    bas = np.array(bas).reshape([nrows, ncols])
+    np.savetxt(os.path.join(wd, 'stuff.dat'), bas.astype(int), fmt='%i',delimiter='\t')
+    print(bas)
+
+
+
 if __name__ == '__main__':
-
-    # wd = "D:\\Projects\\Watersheds\\Okavango\\scenarios\\okvg_swatmf_scn_climates\\scn_models"
-    # sub_number = 240
-    # start_date = '1/1/2003'
-    # end_date = '12/31/2019'
-    # obd_nam = 'sub_240_mohembo'
-    # df = all_strs(wd, sub_number, start_date, obd_nam, time_step='M')
-    
-    # wd = "D:/Projects/Watersheds/Okavango/scenarios/okvg_swatmf_scn_rd_new"
-    # nsubs = 257
-    # scdate = '1/1/2003'
-    # ecdate = '12/31/2019'
-    # startDate = '1/1/2000'
-    # # fname = "mf_1000.riv"
-    # # delete_duplicate_river_grids(wd, fname)
-    # export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs)
-
-
-    # wd = "D:/Projects/Watersheds/Rezvane/mf_temp"
-    # f = 'modflow.h5'
-    # # a = cvtHd5ToArray(wd, f).reshape((94, 76))
-    # # np.savetxt(os.path.join(wd, 'sy.ref'), a, delimiter='\t')   # X is an array
-    # # print('ok...')
-    # a = cvtHd5ToArray(wd, f)
-    # print(a)
-    thisfilepath = os.path.dirname(os.path.abspath( __file__ ))
-
-
+    wd = "D:/Projects/Watersheds/Gumu/Analysis/APEX-MODFLOWs/qsm_50_rt_test/qsm_50/SWAT-MODFLOW"
+    infile = "mf_50.bas"
+    nrows = 123
+    ncols = 62
 
     # print(os.path.abspath(swatmf.__file__))
+    cvt_bas_array(wd, infile, nrows, ncols)
