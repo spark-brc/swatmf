@@ -65,11 +65,12 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
 
 
 if __name__ == '__main__':
-    cwd = os.getcwd()
-    os.chdir(cwd)
+
+    os.chdir(wd)
+    print(wd)
     swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")
     # get default vals
-    wd = swatmf_con.loc['wd', 'vals']
+    # wd = swatmf_con.loc['wd', 'vals']
     sim_start = swatmf_con.loc['sim_start', 'vals']
     warmup = swatmf_con.loc['warm-up', 'vals']
     cal_start = swatmf_con.loc['cal_start', 'vals']
