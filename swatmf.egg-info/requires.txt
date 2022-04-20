@@ -1,9 +1,11 @@
 pandas
 numpy
 pyemu
-flopy
+flopy<=3.3.4
 scipy
 matplotlib
+openpyxl
 hydroeval
 tqdm
 termcolor
+pyshp

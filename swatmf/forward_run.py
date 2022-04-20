@@ -8,7 +8,6 @@ from swatmf import swatmf_pst_utils
 
 wd = os.getcwd()
 os.chdir(wd)
-print(wd)
 
 def time_stamp(des):
     time = datetime.now().strftime('[%m/%d/%y %H:%M:%S]')
