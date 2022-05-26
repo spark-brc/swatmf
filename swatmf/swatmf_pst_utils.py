@@ -2,7 +2,7 @@
     last modified day: 09/14/2020 by Seonggyu Park
 """
 
-from lib2to3.pgen2.token import NEWLINE
+# from lib2to3.pgen2.token import NEWLINE
 import pandas as pd
 import numpy as np
 import time
@@ -131,7 +131,7 @@ def extract_day_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
         - end_day ('str'): simulation end day e.g. '12/31/2005'
 
     Example:
-        sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
+        sm_pst_utils.extract_month_stf('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
     rch_file = 'output.rch'
     start_day =  start_day[:-4] + str(int(start_day[-4:])+ int(warmup))
@@ -143,15 +143,15 @@ def extract_day_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
                         delim_whitespace=True,
                         skiprows=9,
                         usecols=[1, 3, 6],
-                        names=["date", "filter", "str_sim"],
+                        names=["date", "filter", "stf_sim"],
                         index_col=0)
 
         sim_stf_f = sim_stf.loc[i]
         sim_stf_f = sim_stf_f.drop(['filter'], axis=1)
-        sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.str_sim))
+        sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.stf_sim))
         sim_stf_f = sim_stf_f[cali_start_day:cali_end_day]
-        sim_stf_f.to_csv('str_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
-        print('str_{:03d}.txt file has been created...'.format(i))
+        sim_stf_f.to_csv('stf_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
+        print('stf_{:03d}.txt file has been created...'.format(i))
     print('Finished ...')
 
 
@@ -166,7 +166,7 @@ def extract_month_stf(channels, start_day, warmup, cali_start_day, cali_end_day)
         - end_day ('str'): simulation end day e.g. '12/31/2005'
 
     Example:
-        sm_pst_utils.extract_month_str('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
+        sm_pst_utils.extract_month_stf('path', [9, 60], '1/1/1993', '1/1/1993', '12/31/2000')
     """
     rch_file = 'output.rch'
     start_day =  start_day[:-4] + str(int(start_day[-4:]) + int(warmup))
@@ -176,16 +176,16 @@ def extract_month_stf(channels, start_day, warmup, cali_start_day, cali_end_day)
                         delim_whitespace=True,
                         skiprows=9,
                         usecols=[1, 3, 6],
-                        names=["date", "filter", "str_sim"],
+                        names=["date", "filter", "stf_sim"],
                         index_col=0)
 
         sim_stf_f = sim_stf.loc[i]
         sim_stf_f = sim_stf_f[sim_stf_f['filter'] < 13]
         sim_stf_f = sim_stf_f.drop(['filter'], axis=1)
-        sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.str_sim), freq='M')
+        sim_stf_f.index = pd.date_range(start_day, periods=len(sim_stf_f.stf_sim), freq='M')
         sim_stf_f = sim_stf_f[cali_start_day:cali_end_day]
-        sim_stf_f.to_csv('str_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
-        print('str_{:03d}.txt file has been created...'.format(i))
+        sim_stf_f.to_csv('stf_{:03d}.txt'.format(i), sep='\t', encoding='utf-8', index=True, header=False, float_format='%.7e')
+        print('stf_{:03d}.txt file has been created...'.format(i))
     print('Finished ...')
 
 
@@ -300,7 +300,7 @@ def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
         - time_step (`str`): day, month, year
 
     Example:
-        pest_utils.extract_month_str('path', [9, 60], '1/1/1993', '12/31/2000')
+        pest_utils.extract_month_stf('path', [9, 60], '1/1/1993', '12/31/2000')
     """ 
     if time_step is None:
         time_step = 'day'
@@ -322,7 +322,7 @@ def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     stf_sim = pd.read_csv(
                         srch_file,
                         delim_whitespace=True,
-                        names=["date", "str_sim"],
+                        names=["date", "stf_sim"],
                         index_col=0,
                         parse_dates=True)
 
@@ -379,7 +379,7 @@ def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
     wt_sim = pd.read_csv(
                         wt_file,
                         delim_whitespace=True,
-                        names=["date", "str_sim"],
+                        names=["date", "stf_sim"],
                         index_col=0,
                         parse_dates=True)
 
@@ -422,7 +422,7 @@ def extract_month_avg(cha_file, channels, start_day, cal_day=None, end_day=None)
         # Get only necessary simulated streamflow and convert monthly average streamflow
         os.chdir(cha_file)
         print(os.getcwd())
-        df_str = pd.read_csv(
+        df_stf = pd.read_csv(
                             "channel_day.txt",
                             delim_whitespace=True,
                             skiprows=3,
@@ -430,9 +430,9 @@ def extract_month_avg(cha_file, channels, start_day, cal_day=None, end_day=None)
                             names=['name', 'flo_out'],
                             header=None
                             )
-        df_str = df_str.loc[df_str['name'] == 'cha{:02d}'.format(i)]
-        df_str.index = pd.date_range(start_day, periods=len(df_str.flo_out))
-        mdf = df_str.resample('M').mean()
+        df_stf = df_stf.loc[df_stf['name'] == 'cha{:02d}'.format(i)]
+        df_stf.index = pd.date_range(start_day, periods=len(df_stf.flo_out))
+        mdf = df_stf.resample('M').mean()
         mdf.index.name = 'date'
         if cal_day is None:
             cal_day = start_day
@@ -709,4 +709,5 @@ def cvt_stf_day_month_obd(obd_file):
                         )
     stf_obd = stf_obd.resample('M').mean()
     stf_obd.to_csv('stf_mon.obd', sep='\t', float_format='%.7e')
-
+    
+    
