@@ -8,7 +8,6 @@ from swatmf import swatmf_pst_utils
 
 wd = os.getcwd()
 os.chdir(wd)
-print(wd)
 
 def time_stamp(des):
     time = datetime.now().strftime('[%m/%d/%y %H:%M:%S]')
@@ -65,7 +64,7 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
 
 
 if __name__ == '__main__':
-    
+
     os.chdir(wd)
     print(wd)
     swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")

@@ -6,6 +6,7 @@ swatmf/__init__.py
 swatmf/cvt_gcm_pcp.py
 swatmf/forward_run.py
 swatmf/gcm_analysis.py
+swatmf/gumu_pst_utils.py
 swatmf/swatmf_par_chg_run.py
 swatmf/swatmf_pst_par.py
 swatmf/swatmf_pst_stats.py
