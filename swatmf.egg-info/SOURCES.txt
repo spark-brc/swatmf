@@ -20,6 +20,7 @@ swatmf.egg-info/SOURCES.txt
 swatmf.egg-info/dependency_links.txt
 swatmf.egg-info/requires.txt
 swatmf.egg-info/top_level.txt
+swatmf/hg/__init__.py
 swatmf/opt_files/Absolute_SWAT_Values.txt
 swatmf/opt_files/SUFI2_LH_sample.exe
 swatmf/opt_files/Swat_Edit.exe
