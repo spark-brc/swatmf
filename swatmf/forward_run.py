@@ -28,13 +28,10 @@ def modify_hk_sy_pars_pp(pp_included):
         outfile = i + '.ref'
         pyemu.utils.geostats.fac2real(i, factors_file=i+'.fac', out_file=outfile)
 
-
 def execute_swat_edit():
     des = "modifying SWAT parameters"
     time_stamp(des)
     pyemu.os_utils.run('Swat_Edit.exe', cwd='.')
-
-
 
 def execute_swatmf():
     des = "running model"
@@ -61,7 +58,6 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
     des = "simulation successfully completed | calculating baseflow ratio"
     time_stamp(des)
     swatmf_pst_utils.extract_month_baseflow(subs, sim_start, cal_start, cal_end)
-
 
 if __name__ == '__main__':
 
