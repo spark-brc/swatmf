@@ -1,0 +1,1 @@
+pst = pyemu.Pst.from_io_files(*io_files)
