@@ -11,6 +11,45 @@ import pandas as pd
 import numpy as np
 # import h5py as hdf
 import os 
+import datetime
+
+def define_sim_period():
+    if os.path.isfile("file.cio"):
+        cio = open("file.cio", "r")
+        lines = cio.readlines()
+        skipyear = int(lines[59][12:16])
+        iprint = int(lines[58][12:16]) #read iprint (month, day, year)
+        styear = int(lines[8][12:16]) #begining year
+        styear_warmup = int(lines[8][12:16]) + skipyear #begining year with warmup
+        edyear = styear + int(lines[7][12:16])-1 # ending year
+        edyear_warmup = styear_warmup + int(lines[7][12:16])-1 - int(lines[59][12:16])#ending year with warmup
+        if skipyear == 0:
+            FCbeginday = int(lines[9][12:16])  #begining julian day
+        else:
+            FCbeginday = 1  #begining julian day
+        FCendday = int(lines[10][12:16])  #ending julian day
+        cio.close()
+        stdate = datetime.datetime(styear, 1, 1) + datetime.timedelta(FCbeginday - 1)
+        eddate = datetime.datetime(edyear, 1, 1) + datetime.timedelta(FCendday - 1)
+        stdate_warmup = datetime.datetime(styear_warmup, 1, 1) + datetime.timedelta(FCbeginday - 1)
+        eddate_warmup = datetime.datetime(edyear_warmup, 1, 1) + datetime.timedelta(FCendday - 1)
+
+        startDate = stdate.strftime("%m/%d/%Y")
+        endDate = eddate.strftime("%m/%d/%Y")
+        startDate_warmup = stdate_warmup.strftime("%m/%d/%Y")
+        endDate_warmup = eddate_warmup.strftime("%m/%d/%Y")
+        # duration = (eddate - stdate).days
+
+        # ##### 
+        # start_month = stdate.strftime("%b")
+        # start_day = stdate.strftime("%d")
+        # start_year = stdate.strftime("%Y")
+        # end_month = eddate.strftime("%b")
+        # end_day = eddate.strftime("%d")
+        # end_year = eddate.strftime("%Y")
+        return startDate, endDate, startDate_warmup, endDate_warmup
+
+
 
 
 def delete_duplicate_river_grids(wd, riv_fname):

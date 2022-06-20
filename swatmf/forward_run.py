@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 import pyemu
 import pandas as pd
-from swatmf import swatmf_pst_par, swatmf_utils
+from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
 
 
