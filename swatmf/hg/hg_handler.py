@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from .. import utils
+from .. import swatmf_pst_utils
 
 
 
@@ -41,7 +42,13 @@ class Hg(object):
         hg_sub_df = pd.read_csv(hg_sub_file,
                             delim_whitespace=True,
                             skiprows=2,
-                            usecols=["SUB", "Hg0SurfqDs", "Hg2SurfqDs", "MHgSurfqDs", "Hg0SedYlPt", "Hg2SedYlPt", "MHgSedYlPt"],
+                            usecols=[
+                                "SUB",
+                                "Hg0SurfqDs", "Hg2SurfqDs", "MHgSurfqDs",
+                                "Hg0LatlqDs", "Hg2LatlqDs", "MHgLatlqDs",
+                                "Hg0PercqDs", "Hg2PercqDs", "MHgPercqDs",
+                                "Hg0SedYlPt", "Hg2SedYlPt", "MHgSedYlPt",
+                                ],
                             index_col=0
                         )
         hg_sub_dff = pd.DataFrame()
@@ -49,9 +56,19 @@ class Hg(object):
             hg_str_sed_df = hg_sub_df.loc[hg_sub_df["SUB"] == int(s)]
             hg_str_sed_df.index = pd.date_range(self.sim_start_warm, periods=len(hg_str_sed_df))
             hg_str_sed_df = hg_str_sed_df.drop('SUB', axis=1)
-        hg_sub_dff = pd.concat([hg_str_sed_df.iloc[:, 0:3].sum(axis=1), hg_str_sed_df.iloc[:, 3:].sum(axis=1)], axis=1)
-        hg_sub_dff.rename(columns={0:"surf_mg", 1:"sed_mg"}, inplace=True)
-        return hg_sub_dff
+            hg_sub_dff = hg_sub_dff.add(hg_str_sed_df, fill_value=0)
+        contr_df = pd.concat(
+            [
+                hg_sub_dff.iloc[:, 0:3].sum(axis=1), 
+                hg_sub_dff.iloc[:, 3:6].sum(axis=1),
+                hg_sub_dff.iloc[:, 6:9].sum(axis=1),
+                hg_sub_dff.iloc[:, 9:12].sum(axis=1),
+                ], axis=1
+                )
+        contr_df.rename(
+            columns={0:"surf_mg", 1:"lat_mg", 2:"perco_mg", 3:"sed_mg"}, inplace=True)
+        contr_df['tot_contr'] = contr_df["surf_mg"] + contr_df["lat_mg"] + contr_df["perco_mg"] + contr_df["sed_mg"]
+        return contr_df
 
     def hg_yield(self, rch_id):
         hg_rch_file = 'output-mercury.rch'
@@ -65,3 +82,94 @@ class Hg(object):
         hg_rch_df.index = pd.date_range(self.sim_start_warm, periods=len(hg_rch_df))
         hg_rch_df = hg_rch_df.drop('RCH', axis=1)
         return hg_rch_df
+
+    def hg_rch(self, rch_ids):
+        hg_rch_file = 'output-mercury.rch'
+        hg_rch_df = pd.read_csv(hg_rch_file,
+                            delim_whitespace=True,
+                            skiprows=2,
+                            usecols=["RCH", "Hg2PmgSto"],
+                            index_col=0
+                        )
+        hg_df = hg_rch_df.loc["REACH"]
+        hg_wt_sims = pd.DataFrame()
+        for i in rch_ids:
+            hg_dff = hg_df.loc[hg_df["RCH"] == int(i)]
+            hg_dff.index = pd.date_range(self.sim_start_warm, periods=len(hg_dff))
+            hg_dfs = hg_dff.rename({'Hg2PmgSto': 'sub{:03d}'.format(i)}, axis=1)
+            hg_wt_sims = pd.concat([hg_wt_sims, hg_dfs.loc[:, 'sub{:03d}'.format(i)]], axis=1)
+        hg_wt_sims.index = pd.to_datetime(hg_wt_sims.index)
+        return hg_wt_sims
+
+    def hg_sed(self, sed_ids):
+        hg_rch_file = 'output-mercury.rch'
+        # sim_start =  sim_start[:-4] + str(int(sim_start[-4:])+ int(warmup))
+        hg_sed_df = pd.read_csv(hg_rch_file,
+                            delim_whitespace=True,
+                            skiprows=2,
+                            usecols=["RCH", "SedTHgCppm"],
+                            index_col=0
+                        )
+        hg_df = hg_sed_df.loc["REACH"]
+        hg_sed_sims = pd.DataFrame()
+        for i in sed_ids:
+            hg_dff = hg_df.loc[hg_df["RCH"] == int(i)]
+            hg_dff.index = pd.date_range(self.sim_start_warm, periods=len(hg_dff))
+            hg_dff = hg_dff.rename({'SedTHgCppm': 'sub{:03d}'.format(i)}, axis=1)
+            hg_sed_sims = pd.concat([hg_sed_sims, hg_dff.loc[:, 'sub{:03d}'.format(i)]], axis=1)
+        hg_sed_sims.index = pd.to_datetime(hg_sed_sims.index)
+        return hg_sed_sims
+
+    def gw_levels(self, grids, obd_cols, elevs=None):
+        swatmf_pst_utils.extract_depth_to_water(grids, self.sim_start_warm, self.sim_end_warm)
+        gw_tot = pd.DataFrame()
+        if elevs is None:
+            for g, o in zip(grids, obd_cols):
+                sim_df = pd.read_csv(
+                                    'dtw_{}.txt'.format(g),
+                                    delim_whitespace=True,
+                                    index_col=0,
+                                    parse_dates=True,
+                                    header=None
+                                    )
+                sim_df.rename(columns = {1:'sim'}, inplace = True)
+                obd_df = pd.read_csv(
+                                    'dtw_day.obd',
+                                    sep='\t',
+                                    usecols=['date', o],
+                                    index_col=0,
+                                    parse_dates=True,
+                                    na_values=[-999, '']
+                                    )
+                obd_df.rename(columns = {o:'obd'}, inplace = True)
+                so_df = pd.concat([sim_df, obd_df], axis=1)
+                so_df['grid'] = 'g{}'.format(g)
+                so_df.dropna(inplace=True)
+                gw_tot = pd.concat([gw_tot, so_df], axis=0)
+        else:
+            for g, o, elev in zip(grids, obd_cols, elevs):
+                sim_df = pd.read_csv(
+                                    'dtw_{}.txt'.format(g),
+                                    delim_whitespace=True,
+                                    index_col=0,
+                                    parse_dates=True,
+                                    header=None
+                                    )
+                sim_df.rename(columns = {1:'sim'}, inplace = True)
+                obd_df = pd.read_csv(
+                                    'dtw_day.obd',
+                                    sep='\t',
+                                    usecols=['date', o],
+                                    index_col=0,
+                                    parse_dates=True,
+                                    na_values=[-999, '']
+                                    )
+                obd_df.rename(columns = {o:'obd'}, inplace = True)
+                so_df = pd.concat([sim_df, obd_df], axis=1)
+                so_df['grid'] = 'g{}'.format(g)
+                so_df['elev'] = elev
+                so_df.dropna(inplace=True)
+                gw_tot = pd.concat([gw_tot, so_df], axis=0)
+            gw_tot['sim_wt'] = gw_tot['sim'] + gw_tot['elev']
+            gw_tot['obd_wt'] = gw_tot['obd'] + gw_tot['elev']
+        return gw_tot

@@ -49,9 +49,6 @@ def define_sim_period():
         # end_year = eddate.strftime("%Y")
         return startDate, endDate, startDate_warmup, endDate_warmup
 
-
-
-
 def delete_duplicate_river_grids(wd, riv_fname):
     with open(os.path.join(wd, riv_fname), "r") as fp:
         lines = fp.readlines()
@@ -432,7 +429,6 @@ def export_gwsw_swatToExcel(wd, startDate, scdate, ecdate, nsubs):
 #     data = np.array(hf["River": 1])
 #     hf.close()
 #     return data
-
 
 def cvt_bas_array(wd, infile, nrows, ncols):
 
