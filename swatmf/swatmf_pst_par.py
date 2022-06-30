@@ -4,6 +4,7 @@ import glob
 from datetime import datetime
 import pandas as pd
 from pyemu.pst.pst_utils import SFMT,IFMT,FFMT
+from tqdm import tqdm
 
 
 wd = os.getcwd()
@@ -292,6 +293,44 @@ def riv_par_more_detail(wd):
         print("File Not Found! - We couldn't find your *.riv file.")
 
 
-    
+def get_hru_files():
+    hru_files = [f for f in glob.glob("*.hru")]
+    hru_fs = [hf for hf in hru_files if hf[0]=='0' and len(hf[:-4])==9]
+    return hru_fs
+
+def chg_fac():
+    with open('hru_pars.in', 'r') as f:
+        data = f.readlines()
+        data1 = [x.split() for x in data]
+        
+    chgtype = data1[0][0][0].lower()
+    val = data1[0][1]
+    return chgtype, val
 
 
+def hruSurlag():
+    hru_files = get_hru_files()
+    chgtype, fval = chg_fac()
+    for hf in tqdm(hru_files):
+        with open("backup/" + hf, 'r') as f:
+            data = f.readlines()
+            data1 = [x.split() for x in data]
+        nlines = []
+        for num, line in enumerate(data1):
+            if line != [] and len(line) >= 3:
+                if (line[1] == "|") and (line[2].lower() == "surlag:"):
+                    nlines.append(num)
+                    val = float(line[0])
+        if chgtype == 'v':
+            val = float(fval)
+        if chgtype == 'r':
+            val = val + (val*float(fval))
+        with open(hf,'w') as wf:
+            for d in data[:nlines[0]]:
+                wf.write(str(d))
+        with open(hf,'a') as af:
+            af.write("{0:>16.1f}".format(val) +  "    | SURLAG: Surface runoff lag time in the HRU (days)\n")
+        with open(hf,'a') as raf:
+            for d in data[nlines[0]+1:]:
+                raf.write(str(d))
+    print("hru files have been updated ...")    
