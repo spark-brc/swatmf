@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import numpy as np
+import datetime
+from tqdm import tqdm
 from .. import utils
 from .. import swatmf_pst_utils
 
@@ -38,19 +40,39 @@ class Hg(object):
 
     @property
     def hg_sub_inter2(self):
-
         df = pd.DataFrame(index=self.dates, columns=[c for c in range(1, self.sub_num+1)])
-
-
-
         filename = 'swatmf_out_SWAT_rivhg'
         # Open "swatmf_out_MF_gwsw" file
         y = ("GW/SW", "for", "Positive:", "Negative:", "Daily", "Subbasin,")  # Remove unnecssary lines
         with open(filename, "r") as f:
             data = [x.strip() for x in f if x.strip() and not x.strip().startswith(y)] # Remove blank lines
-        data1 = [float(x.split()[1]) for x in data]  # make each line a list
-        df = pd.DataFrame(x, columns=['sub{:03d}'.format(i) for i in self.sub_ids])
-        df.index = pd.date_range(self.sim_start, periods=len(df))
+        date = [x.strip().split() for x in data if x.strip().startswith("Day:")] # Collect only lines with dates
+        onlyDate = [int(x[1]) for x in date]
+        data1 = [x.split() for x in data]  # make each line a list
+        # sdate = datetime.datetime.strptime('01/01/2010', "%m/%d/%Y") # Change startDate format
+        for d in tqdm(onlyDate):
+            count=0
+            for num, line in enumerate(data1, 1):
+                if line[0] == "Day:" in line and line[1] == str(d) in line:
+                    ii = num # Starting line
+            count = int(ii)
+            cols = []
+            vals = []
+            if d < len(onlyDate):
+                while data1[count][0]!='Day:':
+                    cols.append(data1[count][0])
+                    vals.append(float(data1[count][1]))
+                    count +=1
+                for k in range(len(cols)):
+                    df.loc[df.index[(d)-1], int(cols[k])] = vals[k]
+            elif d == len(onlyDate):
+                for i in range(len(data1[count:])):
+                    cols.append(data1[count][0])
+                    vals.append(float(data1[count][1]))
+                    count +=1
+                for k in range(len(cols)):
+                    df.loc[df.index[int(d)-1], int(cols[k])] = vals[k]
+        print("   finished ...")
         return df
 
 

@@ -333,4 +333,34 @@ def hruSurlag():
         with open(hf,'a') as raf:
             for d in data[nlines[0]+1:]:
                 raf.write(str(d))
-    print("hru files have been updated ...")    
+    print("hru files have been updated ...")
+
+def hksy_postcal():
+
+    df =  pd.read_csv('hksy_post_pars.in', sep=r'\s+', header=None)
+    df['parnam'] = df.iloc[:, 0].str[-2:]
+    df['chgtype'] = df.iloc[:, 0].str[:1]
+    df['parval'] = df.iloc[:, 1].astype(float)
+    df.set_index('parnam', inplace = True)
+
+    for i in df.index:
+        chgt = df.loc[i, 'chgtype']
+        val = df.loc[i, 'parval']
+        df_p = pd.read_csv(f'{i}0pp.dat.cal', sep=r'\s+', header=None)
+        if chgt == 'r':
+            new_vals = df_p.iloc[:, 4] + (df_p.iloc[:, 4] * float(val))
+
+        df_p.iloc[:, 0] = df_p.iloc[:, 0].map(lambda x: '{:<12s}'.format(x)) 
+        df_p.iloc[:, 1] = df_p.iloc[:, 1].map(lambda x: '{:<12.5e}'.format(x))
+        df_p.iloc[:, 2] = df_p.iloc[:, 2].map(lambda x: '{:<12.5e}'.format(x))
+        df_p.iloc[:, 3] = df_p.iloc[:, 3].map(lambda x: '{:<6d}'.format(x)) 
+        df_p.iloc[:, 4] = new_vals.map(lambda x: '{:<12.5e}'.format(x))
+        with open(f'{i}0pp.dat', 'w') as f:
+            df_p.to_csv(
+                        f, sep='\t',
+                        header=False,
+                        index=False,
+                        line_terminator='\n',
+                        encoding='utf-8'
+                        )
+        print(os.path.basename(f'{i}0pp.dat') + " file is overwritten successfully!")
