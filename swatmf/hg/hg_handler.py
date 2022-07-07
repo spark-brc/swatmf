@@ -75,6 +75,47 @@ class Hg(object):
         print("   finished ...")
         return df
 
+    @property
+    def hg_sub_gw_sw_inter2(self):
+        df = pd.DataFrame(index=self.dates, columns=[c for c in range(1, self.sub_num+1)])
+        filename = 'swatmf_out_SWAT_gwsw'
+        # Open "swatmf_out_MF_gwsw" file
+        y = ("Groundwater/Surface", "for", "Positive:", "Negative:", "Daily", "Subbasin,")  # Remove unnecssary lines
+        with open(filename, "r") as f:
+            data = [x.strip() for x in f if x.strip() and not x.strip().startswith(y)] # Remove blank lines
+        date = [x.strip().split() for x in data if x.strip().startswith("Day:")] # Collect only lines with dates
+        onlyDate = [int(x[1]) for x in date]
+        data1 = [x.split() for x in data]  # make each line a list
+        # sdate = datetime.datetime.strptime('01/01/2010', "%m/%d/%Y") # Change startDate format
+        for d in tqdm(onlyDate):
+            count=0
+            for num, line in enumerate(data1, 1):
+                if line[0] == "Day:" in line and line[1] == str(d) in line:
+                    ii = num # Starting line
+            count = int(ii)
+            cols = []
+            vals = []
+            if d < len(onlyDate):
+                while data1[count][0]!='Day:':
+                    cols.append(data1[count][0])
+                    vals.append(float(data1[count][1]))
+                    count +=1
+                for k in range(len(cols)):
+                    df.loc[df.index[(d)-1], int(cols[k])] = vals[k]
+            elif d == len(onlyDate):
+                for i in range(len(data1[count:])):
+                    cols.append(data1[count][0])
+                    vals.append(float(data1[count][1]))
+                    count +=1
+                for k in range(len(cols)):
+                    df.loc[df.index[int(d)-1], int(cols[k])] = vals[k]
+        print("   finished ...")
+        return df
+
+
+
+
+
 
     @property
     def hg_riv_grid_inter(self):
