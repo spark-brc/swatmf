@@ -114,9 +114,6 @@ class Hg(object):
 
 
 
-
-
-
     @property
     def hg_riv_grid_inter(self):
         filename = 'swatmf_out_RT_rivhg'
