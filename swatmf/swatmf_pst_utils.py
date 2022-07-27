@@ -80,8 +80,11 @@ def create_swatmf_con(
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
-        f.write("# swatmf.con created by swamf\n")
-        df.to_csv(f, sep='\t', encoding='utf-8', index=False, header=False)
+        f.write("# swatmf.con created by swatmf\n")
+        df.to_csv(
+            f, sep='\t',
+            encoding='utf-8', 
+            index=False, header=False)
     return df
 
 def init_setup(wd, swatwd):
