@@ -107,6 +107,7 @@ def hg_obd_to_ins(hg_sim_file, obd_file, col_name, cal_start, cal_end, time_step
     # if time_step == 'month':
     #     stfobd_file = 'stf_mon.obd'
 
+
     stf_obd = pd.read_csv(
                         obd_file,
                         sep='\t',
@@ -116,14 +117,16 @@ def hg_obd_to_ins(hg_sim_file, obd_file, col_name, cal_start, cal_end, time_step
                         na_values=[-999, '']
                         )
     stf_obd = stf_obd[cal_start:cal_end]
-    
+
     stf_sim = pd.read_csv(
                         hg_sim_file,
                         delim_whitespace=True,
                         names=["date", "stf_sim"],
                         index_col=0,
                         parse_dates=True)
+
     result = pd.concat([stf_obd, stf_sim], axis=1)
+
     result['tdate'] = pd.to_datetime(result.index)
     result['month'] = result['tdate'].dt.month
     result['year'] = result['tdate'].dt.year
