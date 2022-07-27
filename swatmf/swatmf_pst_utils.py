@@ -62,6 +62,8 @@ def create_swatmf_con(
         time_step = 'day'
     if baseflow is None:
         baseflow = 'n'
+    if pp_included is None:
+        pp_included = 'n'
     else:
         baseflow = 'y'
     col01 = [
