@@ -12,8 +12,8 @@ swatmf/swatmf_pst_par.py
 swatmf/swatmf_pst_stats.py
 swatmf/swatmf_pst_utils.py
 swatmf/swatmf_scenario_utils.py
-swatmf/swatmf_utils.py
 swatmf/swatmf_viz.py
+swatmf/utils.py
 swatmf/version.py
 swatmf.egg-info/PKG-INFO
 swatmf.egg-info/SOURCES.txt
@@ -21,6 +21,8 @@ swatmf.egg-info/dependency_links.txt
 swatmf.egg-info/requires.txt
 swatmf.egg-info/top_level.txt
 swatmf/hg/__init__.py
+swatmf/hg/hg_handler.py
+swatmf/hg/viz.py
 swatmf/opt_files/Absolute_SWAT_Values.txt
 swatmf/opt_files/SUFI2_LH_sample.exe
 swatmf/opt_files/Swat_Edit.exe

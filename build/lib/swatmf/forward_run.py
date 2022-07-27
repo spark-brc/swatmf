@@ -62,7 +62,7 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
 if __name__ == '__main__':
 
     os.chdir(wd)
-    print(wd)
+
     swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")
     # get default vals
     # wd = swatmf_con.loc['wd', 'vals']
@@ -97,8 +97,7 @@ if __name__ == '__main__':
         grids = swatmf_con.loc['grids','vals'].strip('][').split(', ')
         grids = [int(i) for i in grids]        
         extract_gw_level_results(grids, sim_start, cal_end)
-
-
+    print(wd)
 
 
 
