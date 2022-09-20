@@ -113,7 +113,6 @@ class Hg(object):
         return df
 
 
-
     @property
     def hg_riv_grid_inter(self):
         filename = 'swatmf_out_RT_rivhg'
