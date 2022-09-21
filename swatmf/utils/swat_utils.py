@@ -119,6 +119,8 @@ class WeatherData(object):
             print(f'reading model {fp} ... processing')
             df = self.read_pcp(os.path.join(fp, pcp_file), pcp_nloc)
             stdate = [df.index[0].strftime('%Y%m%d')]
+            if os.path.exists(os.path.join(output_wd, nm, 'PCP')):
+                shutil.rmtree(os.path.join(output_wd, nm, 'PCP'), ignore_errors=True)
             print(f'writing model {nm} to indivisual file ... processing')      
             for i in tqdm(range(len(df.columns))):
                 wd_df = stdate + df.iloc[:, i].map(lambda x: '{:.3f}'.format(x)).tolist()
@@ -136,15 +138,53 @@ class WeatherData(object):
             print(f'reading model {fp} ... processing')
             max_df, min_df = self.read_tmp(os.path.join(fp, tmp_file), tmp_nloc)
             stdate = [max_df.index[0].strftime('%Y%m%d')]
+            if os.path.exists(os.path.join(output_wd, nm, 'TMP')):
+                shutil.rmtree(os.path.join(output_wd, nm, 'TMP'), ignore_errors=True)
             print(f'writing model {nm} to indivisual file ... processing')      
             for i in tqdm(range(len(max_df.columns))):
                 maxs_ = max_df.iloc[:, i].map(lambda x: '{:.2f}'.format(x)).tolist()
                 mins_ = min_df.iloc[:, i].map(lambda x: '{:.2f}'.format(x)).tolist()
                 ab = [f'{mx},{mi}' for mx, mi in zip(maxs_, mins_)]
                 abf = stdate + ab
+
                 os.makedirs(os.path.join(output_wd, nm, 'TMP'), exist_ok=True)
                 os.chdir(os.path.join(output_wd, nm, 'TMP'))
                 with open(f'TMP_{i+1:03d}.txt', 'w') as fp:
                     for l in abf:
                         fp.write(l+"\n")
 
+
+
+    def cvt_tmp_each2(self, output_wd, tmp_nloc, tmp_file=None):
+        if tmp_file is None:
+            tmp_file = 'Tmp1.Tmp'
+        nms, fps = self.get_weather_folder_lists()
+        for nm, fp in zip(nms[1:], fps[1:]):
+            print(f'reading model {fp} ... processing')
+            max_df, min_df = self.read_tmp(os.path.join(fp, tmp_file), tmp_nloc)
+            
+            max_mean = max_df.mean(axis=1)
+            min_mean = min_df.mean(axis=1)
+            print(f'inserting additional reaches in dataframe ... processing')   
+            for j in tqdm(range(155, 258)):
+                max_mean.name = f'max_sub{j}'
+                min_mean.name = f'min_sub{j}'
+                max_df = pd.concat([max_df, max_mean], axis=1)
+                min_df = pd.concat([min_df, min_mean], axis=1)
+            stdate = [max_df.index[0].strftime('%Y%m%d')]
+            if os.path.exists(os.path.join(output_wd, nm, 'TMP')):
+                shutil.rmtree(os.path.join(output_wd, nm, 'TMP'), ignore_errors=True)
+
+            print(f'writing model {nm} to indivisual file ... processing')      
+            
+            for i in tqdm(range(len(max_df.columns))):
+                maxs_ = max_df.iloc[:, i].map(lambda x: '{:.2f}'.format(x)).tolist()
+                mins_ = min_df.iloc[:, i].map(lambda x: '{:.2f}'.format(x)).tolist()
+                ab = [f'{mx},{mi}' for mx, mi in zip(maxs_, mins_)]
+                abf = stdate + ab
+
+                os.makedirs(os.path.join(output_wd, nm, 'TMP'), exist_ok=True)
+                os.chdir(os.path.join(output_wd, nm, 'TMP'))
+                with open(f'TMP_{i+1:03d}.txt', 'w') as fp:
+                    for l in abf:
+                        fp.write(l+"\n")
