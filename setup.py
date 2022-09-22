@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import codecs
 import os
 
-# long description
+# long description!!
 
 # here = os.path.abspath(os.path.dirname(__file__))
 
