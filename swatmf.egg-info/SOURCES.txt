@@ -30,3 +30,5 @@ swatmf/opt_files/beopest64.exe
 swatmf/opt_files/i64pest.exe
 swatmf/opt_files/i64pwtadj1.exe
 swatmf/opt_files/model.in
+swatmf/utils/__init__.py
+swatmf/utils/swat_utils.py
