@@ -6,3 +6,4 @@ swatmf.egg-info
 build
 dist
 .trash/
+swatmf_git.code-workspace
