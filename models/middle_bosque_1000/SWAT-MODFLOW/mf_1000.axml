@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Model_Archive_List>
+  <bin Model_Name="mf_1000" FileType="bin">
+    <FileName Model_Name="mf_1000" FileType="bin">..\..\..\..\Animas\Analysis\MODFLOWs\mf_1000\MODFLOW-NWT_64.exe</FileName>
+  </bin>
+  <ancillary Model_Name="mf_1000" FileType="ancillary">
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.dbf</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.prj</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.sbn</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.sbx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.shp</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MB_SWAT_org\Watershed\Shapes\riv1.shx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\edlime_r_clip.txt</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.dbf</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.prj</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.sbn</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.sbx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.shp</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.shp.xml</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\gis_092116\MB_topGeology_proj.shx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\Data\MODFLOW models\mb_dem_30.txt</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.dbf</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.prj</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.sbn</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.sbx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.shp</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.shp.xml</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\..\..\..\..\MiddleBosque\sub_dis.shx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.dbf</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.prj</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.sbn</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.sbx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.shp</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.shp.xml</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_dis.shx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.dbf</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.prj</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.sbn</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.sbx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.shp</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.shp.xml</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">..\ed_riv_dis.shx</FileName>
+    <FileName Model_Name="mf_1000" FileType="ancillary">mf_1000.mmZLib</FileName>
+  </ancillary>
+  <model Model_Name="mf_1000" FileType="Model Input">
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.bas</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.dis</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.evt</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.gsf</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.jtf</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.nam.archive</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.nwt</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.oc</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.pval</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.rch</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.riv</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.upw</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">mf_1000.zon</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">RunModflow.Bat.archive</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Input">usgs.mf_1000.reference</FileName>
+  </model>
+  <output Model_Name="mf_1000" FileType="Model Output">
+    <FileName Model_Name="mf_1000" FileType="Model Output">mf_1000.cbc</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Output">mf_1000.fdn</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Output">mf_1000.fhd</FileName>
+    <FileName Model_Name="mf_1000" FileType="Model Output">mf_1000.lst</FileName>
+  </output>
+</Model_Archive_List>

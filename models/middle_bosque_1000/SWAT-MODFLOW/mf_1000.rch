@@ -1,0 +1,4 @@
+# RCH: Recharge package file created on 2/4/2022 by ModelMuse version 4.3.0.0.
+     1     9 # DataSet 2: NRCHOP IRCHCB
+     1     1 # Data Set 5: INRECH INIRCH Stress period 1
+CONSTANT     0.000000000000E+000  # Data Set 6: RECH

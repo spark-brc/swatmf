@@ -1,0 +1,14 @@
+ Progress of SWAT-MODFLOW simulation
+ 
+ swatmf_link.txt:    file flags have been read
+ swatmf_link.txt:    MODFLOW is active
+ swatmf_link.txt:    Observation cell file needed
+ swatmf_link.txt:    output flags have been read
+ swatmf_link.txt:    output control has been read
+ 
+ swatmf_init: MODFLOW files have been read
+ swatmf_init: swatmf_grid2dhru.txt has been read
+ swatmf_init: swatmf_dhru2grid.txt has been read
+ swatmf_init: swatmf_dhru2hru.txt has been read
+ swatmf_init: swatmf_river2grid.txt has been read
+ swatmf_init: initialization finished
