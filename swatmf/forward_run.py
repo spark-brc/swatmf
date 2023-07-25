@@ -2,6 +2,11 @@ import os
 from datetime import datetime
 import pyemu
 import pandas as pd
+import sys
+
+path = "D:/spark-brc_gits/swatmf_git"
+sys.path.insert(1, path)
+
 from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
 

@@ -1,5 +1,4 @@
 """ PEST support utilities: 12/4/2019 created by Seonggyu Park
-    last modified day: 09/14/2020 by Seonggyu Park
 """
 
 # from lib2to3.pgen2.token import NEWLINE
@@ -30,8 +29,8 @@ def create_swatmf_con(
                 subs=None, grids=None, riv_parm=None,
                 baseflow=None,
                 time_step=None,
-                depth_to_water=None, 
-                pp_included=None
+                pp_included=None,
+                # depth_to_water=None, 
                 ):
     """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
 
@@ -67,8 +66,8 @@ def create_swatmf_con(
         baseflow = 'y'
     if pp_included is None:
         pp_included = 'n'
-    if depth_to_water is None:
-        depth_to_water = 'n'
+    # if depth_to_water is None:
+    #     depth_to_water = 'n'
 
 
     col01 = [
@@ -77,7 +76,6 @@ def create_swatmf_con(
         'riv_parm', 'baseflow',
         'time_step',
         'pp_included',
-        'depth_to_water'
         ]
     col02 = [
         wd, sim_start, warmup, cal_start, cal_end, 
@@ -85,7 +83,6 @@ def create_swatmf_con(
         riv_parm, baseflow,
         time_step,
         pp_included,
-        depth_to_water
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
@@ -291,7 +288,7 @@ def extract_depth_to_water(grid_ids, start_day, end_day):
     mf_sim = pd.read_csv(
                         'swatmf_out_MF_obs', skiprows=1, sep=r'\s+',
                         names=col_names,
-                        usecols=grid_ids,
+                        # usecols=grid_ids,
                         )
     mf_sim.index = pd.date_range(start_day, periods=len(mf_sim))
     mf_sim = mf_sim[start_day:end_day]
@@ -321,9 +318,9 @@ def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     """ 
     if time_step is None:
         time_step = 'day'
-        stfobd_file = 'stf_day.obd'
+        stfobd_file = 'swat_rch_day.obd'
     if time_step == 'month':
-        stfobd_file = 'stf_mon.obd'
+        stfobd_file = 'swat_rch_mon.obd'
 
 
     stf_obd = pd.read_csv(
@@ -369,7 +366,7 @@ def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     return result['{}_ins'.format(col_name)]
 
 
-def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
+def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end, mf_obd_file=None):
     """extract a simulated streamflow from the output.rch file,
         store it in each channel file.
 
@@ -382,9 +379,10 @@ def mf_obd_to_ins(wt_file, col_name, cal_start, cal_end):
     Example:
         pest_utils.extract_month_str('path', [9, 60], '1/1/1993', '12/31/2000')
     """ 
-
+    if mf_obd_file is None:
+        mf_obd_file = "modflow_day.obd"
     mf_obd = pd.read_csv(
-                        'modflow.obd',
+                        mf_obd_file,
                         sep='\t',
                         usecols=['date', col_name],
                         index_col=0,

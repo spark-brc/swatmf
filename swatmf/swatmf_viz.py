@@ -21,10 +21,10 @@ def all_strs(wd, sub_number, start_date, obd_nam, time_step=None):
     scn_nams, full_paths = get_all_scenario_lists(wd)
     if time_step is None:
         time_step = "D"
-        strobd_file = "streamflow.obd"
+        strobd_file = "swat_rch_day.obd"
     else:
         time_step = "M"
-        strobd_file = "streamflow_month.obd"
+        strobd_file = "swat_rch_mon.obd"
     tot_df = pd.DataFrame()
     for scn_nam, p in zip(scn_nams, full_paths):
         os.chdir(p)
@@ -54,10 +54,10 @@ def all_seds(wd, sub_number, start_date, obd_nam, time_step=None):
     scn_nams, full_paths = get_all_scenario_lists(wd)
     if time_step is None:
         time_step = "D"
-        strobd_file = "streamflow.obd"
+        strobd_file = "swat_rch_day.obd"
     else:
         time_step = "M"
-        strobd_file = "streamflow_month.obd"
+        strobd_file = "swat_rch_mon.obd"
     tot_df = pd.DataFrame()
     for scn_nam, p in zip(scn_nams, full_paths):
         os.chdir(p)
@@ -86,10 +86,10 @@ def all_seds(wd, sub_number, start_date, obd_nam, time_step=None):
 def str_df(start_date, sub_number, time_step=None):
     if time_step is None:
         time_step = "D"
-        strobd_file = "streamflow.obd"
+        strobd_file = "swat_rch_day.obd"
     else:
         time_step = "M"
-        strobd_file = "streamflow_month.obd."
+        strobd_file = "swat_rch_mon.obd."
     df = pd.read_csv(
                 os.path.join("output.rch"),
                 delim_whitespace=True,
@@ -111,10 +111,10 @@ def apex_str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
     
     if time_step is None:
         time_step = "D"
-        strobd_file = "streamflow.obd"
+        strobd_file = "swat_rch_day.obd"
     else:
         time_step = "M"
-        strobd_file = "streamflow_month.obd."
+        strobd_file = "swat_rch_mon.obd."
     output_rch = pd.read_csv(
                         rch_file, delim_whitespace=True, skiprows=9,
                         usecols=[0, 1, 8], names=["idx", "sub", "simulated"], index_col=0
@@ -346,9 +346,9 @@ def obds_df(strobd_file, wt_obd_file):
                         parse_dates=True, delimiter="\t",
                         na_values=[-999, ""]
                         )
-    if strobd_file == 'streamflow_month.obd':
+    if strobd_file == 'swat_rch_mon.obd':
         str_obd = str_obd.resample('M').mean()
-    if wt_obd_file == 'modflow_month.obd':
+    if wt_obd_file == 'modflow_mon.obd':
         wt_obd = wt_obd.resample('M').mean()
 
     df = pd.concat([str_obd, wt_obd], axis=1)
@@ -359,10 +359,10 @@ def wt_df(start_date, grid_id, obd_nam, time_step=None, prep_sub=None):
     
     if time_step is None:
         time_step = "D"
-        mfobd_file = "modflow.obd"
+        mfobd_file = "modflow_day.obd"
     else:
         time_step = "M"
-        mfobd_file = "modflow_month.obd."
+        mfobd_file = "modflow_mon.obd."
 
     mf_obs = pd.read_csv(
                         "MODFLOW/modflow.obs",
@@ -488,10 +488,10 @@ def wt_tot_df(sim_start, df_start, df_end, grid_ids, obd_nams, time_step=None):
     """
     if time_step is None:
         time_step = "D"
-        mfobd_file = "modflow.obd"
+        mfobd_file = "modflow_day.obd"
     else:
         time_step = "M"
-        mfobd_file = "modflow_month.obd."
+        mfobd_file = "modflow_mon.obd."
     # read obs and obd files to get grid ids, elev, and observed values
     mf_obs = pd.read_csv(
                         "MODFLOW/modflow.obs",
