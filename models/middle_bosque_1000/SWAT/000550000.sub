@@ -1,0 +1,86 @@
+ .sub file Subbasin: 55 4/9/2015 12:00:00 AM ArcSWAT 2012.10_2.15
+        4.275000    | SUB_KM : Subbasin area [km2]
+
+Climate in subbasin
+       31.595725    | LATITUDE : Latitude of subbasin [degrees]
+          288.40    | ELEV : Elevation of subbasin [m]
+               1    | IRGAGE: precip gage data used in subbasin
+               1    | ITGAGE: temp gage data used in subbasin
+               0    | ISGAGE: solar radiation gage data used in subbasin
+               0    | IHGAGE: relative humidity gage data used in subbasin
+               0    | IWGAGE: wind speed gage data used in subbasin
+000550000.wgn       | WGNFILE: name of weather generator data file
+               1    | FCST_REG: Region number used to assign forecast data to the subbasin
+Elevation Bands
+| ELEVB: Elevation at center of elevation bands [m]
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+| ELEVB_FR: Fraction of subbasin area within elevation band
+   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+| SNOEB: Initial snow water content in elevation band [mm]
+     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
+           0.000    | PLAPS : Precipitation lapse rate [mm/km]
+           0.000    | TLAPS : Temperature lapse rate [°C/km]
+           0.000    | SNO_SUB : Initial snow water content [mm]
+Tributary Channels
+           2.616    | CH_L1 : Longest tributary channel length [km]
+           0.005    | CH_S1 : Average slope of tributary channel [m/m]
+           3.084    | CH_W1 : Average width of tributary channel [m]
+           0.000    | CH_K1 : Effective hydraulic conductivity in tributary channel [mm/hr]
+           0.014    | CH_N1 : Manning's "n" value for the tributary channels
+Impoundments
+000550000.pnd       | PNDFILE: name of subbasin impoundment file
+Consumptive Water Use
+000550000.wus       | WUSFILE: name of subbasin water use file
+Climate Change
+         330.000    | CO2 : Carbon dioxide concentration [ppmv]
+| RFINC:  Climate change monthly rainfall adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RFINC:  Climate change monthly rainfall adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| TMPINC: Climate change monthly temperature adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| TMPINC: Climate change monthly temperature adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RADINC: Climate change monthly radiation adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| RADINC: Climate change monthly radiation adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HUMINC: Climate change monthly humidity adjustment (January - June)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HUMINC: Climate change monthly humidity adjustment (July - December)
+   0.000   0.000   0.000   0.000   0.000   0.000
+| HRU data
+              25    | HRUTOT : Total number of HRUs modeled in subbasin
+
+HRU: Depressional Storage/Pothole
+
+Floodplain
+
+HRU: Riparian
+
+HRU: General
+000550001.hru000550001.mgt000550001.sol000550001.chm 000550001.gw             000550001.sep
+000550002.hru000550002.mgt000550002.sol000550002.chm 000550002.gw             000550002.sep
+000550003.hru000550003.mgt000550003.sol000550003.chm 000550003.gw             000550003.sep
+000550004.hru000550004.mgt000550004.sol000550004.chm 000550004.gw             000550004.sep
+000550005.hru000550005.mgt000550005.sol000550005.chm 000550005.gw             000550005.sep
+000550006.hru000550006.mgt000550006.sol000550006.chm 000550006.gw             000550006.sep
+000550007.hru000550007.mgt000550007.sol000550007.chm 000550007.gw             000550007.sep
+000550008.hru000550008.mgt000550008.sol000550008.chm 000550008.gw             000550008.sep
+000550009.hru000550009.mgt000550009.sol000550009.chm 000550009.gw             000550009.sep
+000550010.hru000550010.mgt000550010.sol000550010.chm 000550010.gw             000550010.sep
+000550011.hru000550011.mgt000550011.sol000550011.chm 000550011.gw             000550011.sep
+000550012.hru000550012.mgt000550012.sol000550012.chm 000550012.gw             000550012.sep
+000550013.hru000550013.mgt000550013.sol000550013.chm 000550013.gw             000550013.sep
+000550014.hru000550014.mgt000550014.sol000550014.chm 000550014.gw             000550014.sep
+000550015.hru000550015.mgt000550015.sol000550015.chm 000550015.gw             000550015.sep
+000550016.hru000550016.mgt000550016.sol000550016.chm 000550016.gw             000550016.sep
+000550017.hru000550017.mgt000550017.sol000550017.chm 000550017.gw             000550017.sep
+000550018.hru000550018.mgt000550018.sol000550018.chm 000550018.gw             000550018.sep
+000550019.hru000550019.mgt000550019.sol000550019.chm 000550019.gw             000550019.sep
+000550020.hru000550020.mgt000550020.sol000550020.chm 000550020.gw             000550020.sep
+000550021.hru000550021.mgt000550021.sol000550021.chm 000550021.gw             000550021.sep
+000550022.hru000550022.mgt000550022.sol000550022.chm 000550022.gw             000550022.sep
+000550023.hru000550023.mgt000550023.sol000550023.chm 000550023.gw             000550023.sep
+000550024.hru000550024.mgt000550024.sol000550024.chm 000550024.gw             000550024.sep
+000550025.hru000550025.mgt000550025.sol000550025.chm 000550025.gw             000550025.sep

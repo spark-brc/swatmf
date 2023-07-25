@@ -29,7 +29,8 @@ def create_swatmf_con(
                 wd, sim_start, warmup, cal_start, cal_end,
                 subs=None, grids=None, riv_parm=None,
                 baseflow=None,
-                time_step=None, 
+                time_step=None,
+                depth_to_water=None, 
                 pp_included=None
                 ):
     """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
@@ -62,23 +63,29 @@ def create_swatmf_con(
         time_step = 'day'
     if baseflow is None:
         baseflow = 'n'
-    if pp_included is None:
-        pp_included = 'n'
     else:
         baseflow = 'y'
+    if pp_included is None:
+        pp_included = 'n'
+    if depth_to_water is None:
+        depth_to_water = 'n'
+
+
     col01 = [
         'wd', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
         'subs', 'grids',
         'riv_parm', 'baseflow',
         'time_step',
-        'pp_included'
+        'pp_included',
+        'depth_to_water'
         ]
     col02 = [
         wd, sim_start, warmup, cal_start, cal_end, 
         subs, grids,
         riv_parm, baseflow,
         time_step,
-        pp_included
+        pp_included,
+        depth_to_water
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
     with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
@@ -92,20 +99,25 @@ def create_swatmf_con(
 def init_setup(wd, swatwd):
     filesToCopy = [
         "Absolute_SWAT_Values.txt",
-        "beopest64.exe",
-        "i64pest.exe",
         "i64pwtadj1.exe",
+        "pestpp-glm.exe",
+        "pestpp-ies.exe",
+        "pestpp-opt.exe",
+        "pestpp-sen.exe",
         "model.in",
         "SUFI2_LH_sample.exe",
         "Swat_Edit.exe",
         ]
-    
     suffix = ' passed'
     print(" Creating 'backup' folder ...",  end='\r', flush=True)
     if not os.path.isdir(os.path.join(wd, 'backup')):
         os.makedirs(os.path.join(wd, 'backup'))
-        filelist =  os.listdir(swatwd)
+        filelist = [f for f in os.listdir(swatwd) if os.path.isfile(os.path.join(swatwd, f))]
+        
+        # filelist =  os.listdir(swatwd)
         for i in tqdm(filelist):
+            # print(i)
+            # if os.path.getsize(os.path.join(swatwd, i)) != 0:
             shutil.copy2(os.path.join(swatwd, i), os.path.join(wd, 'backup'))
     print(" Creating 'backup' folder ..." + colored(suffix, 'green'))
     print(" Creating 'echo' folder ...",  end='\r', flush=True)
@@ -248,7 +260,7 @@ def extract_month_baseflow(channels, start_day, cali_start_day, cali_end_day):
 
 
 def extract_depth_to_water(grid_ids, start_day, end_day):
-    """extract a simulated streamflow from the output.rch file,
+    """extract a simulated depth to water using modflow.obs and swatmf_out_MF_obs,
         store it in each channel file.
 
     Args:
