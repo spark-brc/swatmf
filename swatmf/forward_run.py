@@ -5,15 +5,11 @@ import pandas as pd
 import sys
 import subprocess
 
-
 path = "D:/spark/gits/swatmf"
 sys.path.insert(1, path)
 
-
 from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
-
-
 
 wd = os.getcwd()
 os.chdir(wd)
