@@ -1,10 +1,10 @@
 
 [<img src="https://img.shields.io/badge/LABEL-MESSAGE-COLOR.svg?logo=LOGO">](<LINK>)
 [<img src="https://img.shields.io/pypi/v/swatmf?color=blue"](<LINK>)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
 
 
+[![PyPI - License](https://img.shields.io/pypi/l/swatmf)](https://opensource.org/licenses/BSD-3-Clause)
 [![PyPI Version](https://img.shields.io/pypi/v/swatmf?color=blue)](https://pypi.python.org/pypi/swatmf)
 
 
