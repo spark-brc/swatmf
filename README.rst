@@ -35,10 +35,10 @@ Easy way
 Hard way (Dev mode)
 -------------------
 
-- You will need to install Git if you don’t have it installed already. Downloads are available at [the link](https://git-scm.com/download). On windows, be sure to select the option that installs command-line tools  
+- You will need to install Git if you don't have it installed already. Downloads are available at [the link](https://git-scm.com/download). On windows, be sure to select the option that installs command-line tools  
 - For Git, you will need to set up SSH keys to work with Github. To do so:
     - Go to GitHub.com and set up an account
-    - On Windows, open Git Bash (on Mac/Linux, just open a terminal) and set up ssh keys if you haven’t already. To do this, simply type ssh-keygen in git bash/terminal and accept all defaults (important note - when prompted for an optional passphrase, just hit return.)  
+    - On Windows, open Git Bash (on Mac/Linux, just open a terminal) and set up ssh keys if you haven't already. To do this, simply type ssh-keygen in git bash/terminal and accept all defaults (important note - when prompted for an optional passphrase, just hit return.)  
 - Follow the `instructions <https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/>`_ to set up the SSH keys with your GitHub account.
 - Clone the materials from GitHub.
     - Open a git bash shell from the start menu (or, on a Mac/Linux, open a terminal)
@@ -64,7 +64,7 @@ To execute jupyter notebook, we need the Miniconda environment.
 - Run the installer and select "only my user" when prompted. This will allow you to work with your python installation directly.
 
 2. Set Environment and install libraries:
-----------------------------------------
+-----------------------------------------
 
 - After installation, go to the START menu and select "Miniconda Prompt" to open a DOS box.
 - Type the following command:
@@ -80,7 +80,7 @@ To execute jupyter notebook, we need the Miniconda environment.
 
 .. code-block:: bash
 
-   mamba env create -f environment.yml
+   mamba env create -f environment_swatmf.yml
 
 and hit ENTER.
 
