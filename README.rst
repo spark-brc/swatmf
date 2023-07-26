@@ -47,7 +47,8 @@ Hard way (Dev mode)
 
 
 .. code-block:: bash
-git clone https://github.com/spark-brc/swatmf.git
+
+   git clone https://github.com/spark-brc/swatmf.git
 
 
 
@@ -71,13 +72,15 @@ To execute jupyter notebook, we need the Miniconda environment.
 
 
 .. code-block:: bash
-conda install -c conda-forge mamba
+
+   conda install -c conda-forge mamba
 
 
 - Using the `cd <https://www.computerhope.com/issues/chusedos.htm>`_ command in the Miniconda DOS box, navigate to the location where you have `environment.yml` the file and type: 
 
 .. code-block:: bash
-mamba env create -f environment.yml
+
+   mamba env create -f environment.yml
 
 and hit ENTER.
 
@@ -88,7 +91,9 @@ After your virtual environment setup is complete, change the environment to `swa
    conda activate swatmf
 
 - Launch jupyter notebook 
+
 .. code-block:: bash
+
    jupyter notebook
 
 
