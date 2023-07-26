@@ -4,7 +4,9 @@ import pyemu
 import pandas as pd
 import sys
 import subprocess
-path = "D:/spark/gits/swatmf-main"
+
+
+path = "D:/spark/gits/swatmf"
 sys.path.insert(1, path)
 
 
