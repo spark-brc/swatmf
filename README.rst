@@ -102,9 +102,9 @@ A browser window with a Jupyter notebook instance should open. Yay!
 
 
 
-.. code-block:: python
-   
-   >>> pip install swatmf
+  .. code-block:: python
+     
+     >>> pip install swatmf
 
 
 .. rubric:: Brief overview of the API
