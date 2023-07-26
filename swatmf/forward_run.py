@@ -3,12 +3,14 @@ from datetime import datetime
 import pyemu
 import pandas as pd
 import sys
-
-path = "D:/spark-brc_gits/swatmf_git"
+import subprocess
+path = "D:/spark/gits/swatmf-main"
 sys.path.insert(1, path)
+
 
 from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
+
 
 
 wd = os.getcwd()
@@ -35,8 +37,10 @@ def modify_hk_sy_pars_pp(pp_included):
 
 def execute_swat_edit():
     des = "modifying SWAT parameters"
-    time_stamp(des)
-    pyemu.os_utils.run('Swat_Edit.exe', cwd='.')
+    # time_stamp(des)
+    # pyemu.os_utils.run('Swat_Edit.exe', cwd='.')
+    p = subprocess.Popen('Swat_Edit.exe' , cwd = '.')
+    p.wait()
 
 def execute_swatmf():
     des = "running model"
