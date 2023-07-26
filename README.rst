@@ -47,8 +47,7 @@ Hard way (Dev mode)
 
 
 .. code-block:: bash
-
-   git clone https://github.com/spark-brc/swatmf.git
+git clone https://github.com/spark-brc/swatmf.git
 
 
 
@@ -59,23 +58,25 @@ Installation
 To execute jupyter notebook, we need the Miniconda environment.
 
 1. Miniconda Python:
+####################
+
 - If you don't already have conda installed, please download Miniconda for your operating system from https://conda.io/en/latest/miniconda.html (choose the latest version for your operating system, 64-bit). You should not need elevated rights to install this.
 - Run the installer and select "only my user" when prompted. This will allow you to work with your python installation directly.
 
 2. Set Environment and install libraries:
+#########################################
+
 - After installation, go to the START menu and select "Miniconda Prompt" to open a DOS box.
 - Type the following command:
 
 
 .. code-block:: bash
-
 conda install -c conda-forge mamba
 
 
 - Using the `cd <https://www.computerhope.com/issues/chusedos.htm>`_ command in the Miniconda DOS box, navigate to the location where you have `environment.yml` the file and type: 
 
 .. code-block:: bash
-
 mamba env create -f environment.yml
 
 and hit ENTER.
