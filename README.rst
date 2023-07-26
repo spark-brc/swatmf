@@ -1,3 +1,4 @@
+------
 swatmf
 ------
 
@@ -10,9 +11,7 @@ swatmf
 .. image:: https://zenodo.org/badge/304147230.svg
    :target: https://zenodo.org/badge/latestdoi/304147230
 
-======
-swatmf 
-======
+
 
 `swatmf` is a set of python modules for SWAT-MODFLOW model (Bailey et al., 2016) parameter estimation and uncertainty analysis with the open-source suite PEST (Doherty 2010a and 2010b, and Doherty and other, 2010).
 
