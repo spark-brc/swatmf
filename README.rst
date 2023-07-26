@@ -1,6 +1,6 @@
-------
+======
 swatmf
-------
+======
 
 .. image:: https://img.shields.io/pypi/v/swatmf?color=blue
    :target: https://pypi.python.org/pypi/swatmf
@@ -15,25 +15,25 @@ swatmf
 
 `swatmf` is a set of python modules for SWAT-MODFLOW model (Bailey et al., 2016) parameter estimation and uncertainty analysis with the open-source suite PEST (Doherty 2010a and 2010b, and Doherty and other, 2010).
 
--------------------------------------------
+===========================================
 Uncertainty Analysis for SWAT-MODFLOW model
--------------------------------------------
+===========================================
 
 
 Get data and jupyter notebooks
-******************************
+------------------------------
 
 You essentially have 2 options:
 
 Easy way
-########
+--------
 
 - `Download the data zip file <https://github.com/spark-brc/swatmf/archive/refs/heads/main.zip>`_
 - Unzip `swatmf-main.zip` to a prefered location.
 
 
 Hard way (Dev mode)
-###################
+-------------------
 
 - You will need to install Git if you don’t have it installed already. Downloads are available at [the link](https://git-scm.com/download). On windows, be sure to select the option that installs command-line tools  
 - For Git, you will need to set up SSH keys to work with Github. To do so:
@@ -51,9 +51,9 @@ Hard way (Dev mode)
    git clone https://github.com/spark-brc/swatmf.git
 
 
-------------
+============
 Installation
-------------
+============
 
 To execute jupyter notebook, we need the Miniconda environment.
 
