@@ -57,6 +57,6 @@ Installation
 
 To execute jupyter notebook, we need the Miniconda environment.
 
-Miniconda Python:
+Miniconda Python
 #################
 
