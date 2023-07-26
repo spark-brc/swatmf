@@ -45,3 +45,12 @@ Hard way (Dev mode)
     - Navigate to the folder you made to put the course materials
     - Clone the materials by executing the following in the git bash or terminal window:
 
+
+.. code-block:: bash
+
+   git clone https://github.com/spark-brc/swatmf.git
+
+
+------------
+Installation
+------------
