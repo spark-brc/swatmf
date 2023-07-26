@@ -125,7 +125,3 @@ A browser window with a Jupyter notebook instance should open. Yay!
    'i64pwtadj1.exe' file copied ... passed
    'forward_run.py' file copied ... passed
 
-
-.. toctree::
-   :numbered:
-
