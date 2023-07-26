@@ -4,6 +4,7 @@
 
 
 
+[![PyPI - License](https://zenodo.org/badge/304147230.svg)](https://zenodo.org/badge/latestdoi/304147230)
 [![PyPI - License](https://img.shields.io/pypi/l/swatmf)](https://opensource.org/licenses/BSD-3-Clause)
 [![PyPI Version](https://img.shields.io/pypi/v/swatmf?color=blue)](https://pypi.python.org/pypi/swatmf)
 
