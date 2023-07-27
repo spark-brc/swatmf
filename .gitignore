@@ -1,5 +1,5 @@
 .git
-.docs/_build
+.docs/_build/
 .docs/_static
 .docs/templates
 .ipynb_checkpoints
