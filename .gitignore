@@ -1,5 +1,7 @@
 .git
-.docs
+.docs/_build
+.docs/_static
+.docs/templates
 .ipynb_checkpoints
 .pytest_cache
 .vscode
