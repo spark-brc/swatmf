@@ -115,8 +115,9 @@ A browser window with a Jupyter notebook instance should open. Yay!
    Creating 'backup' folder ... passed
    Creating 'echo' folder ... passed
    Creating 'sufi2.in' folder ... passed
-   'beopest64.exe' file copied ... passed
-   'i64pest.exe' file copied ... passed
-   'i64pwtadj1.exe' file copied ... passed
+   'Absolute_SWAT_Values.txt' file copied ... passed
+   'pestpp-glm' file copied ... passed
+   'pestpp-ies.exe' file copied ... passed
+   'pestpp-ies.exe' file copied ... passed
    'forward_run.py' file copied ... passed
 

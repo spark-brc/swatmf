@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>swatmf.utils package &mdash; swatmf Documentation 0.3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            swatmf Documentation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">swatmf.utils package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-swatmf.utils.etc">swatmf.utils.etc module</a><ul>
+<li><a class="reference internal" href="#swatmf.utils.etc.rename_files"><code class="docutils literal notranslate"><span class="pre">rename_files()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-swatmf.utils.swat_utils">swatmf.utils.swat_utils module</a><ul>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData"><code class="docutils literal notranslate"><span class="pre">WeatherData</span></code></a><ul>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.cvt_gcm_pcp"><code class="docutils literal notranslate"><span class="pre">WeatherData.cvt_gcm_pcp</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.cvt_pcp_each"><code class="docutils literal notranslate"><span class="pre">WeatherData.cvt_pcp_each()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.cvt_tmp_each"><code class="docutils literal notranslate"><span class="pre">WeatherData.cvt_tmp_each()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.cvt_tmp_each2"><code class="docutils literal notranslate"><span class="pre">WeatherData.cvt_tmp_each2()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.get_weather_folder_lists"><code class="docutils literal notranslate"><span class="pre">WeatherData.get_weather_folder_lists()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.modify_tmp"><code class="docutils literal notranslate"><span class="pre">WeatherData.modify_tmp()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.read_gcm"><code class="docutils literal notranslate"><span class="pre">WeatherData.read_gcm()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.read_pcp"><code class="docutils literal notranslate"><span class="pre">WeatherData.read_pcp()</span></code></a></li>
+<li><a class="reference internal" href="#swatmf.utils.swat_utils.WeatherData.read_tmp"><code class="docutils literal notranslate"><span class="pre">WeatherData.read_tmp()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-swatmf.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">swatmf Documentation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">swatmf.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/swatmf.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="swatmf-utils-package">
+<h1>swatmf.utils package<a class="headerlink" href="#swatmf-utils-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-swatmf.utils.etc">
+<span id="swatmf-utils-etc-module"></span><h2>swatmf.utils.etc module<a class="headerlink" href="#module-swatmf.utils.etc" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="swatmf.utils.etc.rename_files">
+<span class="sig-prename descclassname"><span class="pre">swatmf.utils.etc.</span></span><span class="sig-name descname"><span class="pre">rename_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/etc.html#rename_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.etc.rename_files" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-swatmf.utils.swat_utils">
+<span id="swatmf-utils-swat-utils-module"></span><h2>swatmf.utils.swat_utils module<a class="headerlink" href="#module-swatmf.utils.swat_utils" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">swatmf.utils.swat_utils.</span></span><span class="sig-name descname"><span class="pre">WeatherData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.cvt_gcm_pcp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cvt_gcm_pcp</span></span><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.cvt_gcm_pcp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.cvt_pcp_each">
+<span class="sig-name descname"><span class="pre">cvt_pcp_each</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_wd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcp_nloc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcp_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.cvt_pcp_each"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.cvt_pcp_each" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.cvt_tmp_each">
+<span class="sig-name descname"><span class="pre">cvt_tmp_each</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_wd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_nloc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.cvt_tmp_each"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.cvt_tmp_each" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.cvt_tmp_each2">
+<span class="sig-name descname"><span class="pre">cvt_tmp_each2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_wd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_nloc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.cvt_tmp_each2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.cvt_tmp_each2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.get_weather_folder_lists">
+<span class="sig-name descname"><span class="pre">get_weather_folder_lists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.get_weather_folder_lists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.get_weather_folder_lists" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.modify_tmp">
+<span class="sig-name descname"><span class="pre">modify_tmp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weather_wd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weather_modified_wd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_files_fr_org</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.modify_tmp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.modify_tmp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.read_gcm">
+<span class="sig-name descname"><span class="pre">read_gcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.read_gcm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.read_gcm" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.read_pcp">
+<span class="sig-name descname"><span class="pre">read_pcp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcp_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nloc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.read_pcp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.read_pcp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="swatmf.utils.swat_utils.WeatherData.read_tmp">
+<span class="sig-name descname"><span class="pre">read_tmp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tmp_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nloc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swatmf/utils/swat_utils.html#WeatherData.read_tmp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#swatmf.utils.swat_utils.WeatherData.read_tmp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-swatmf.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-swatmf.utils" title="Permalink to this heading"></a></h2>
+<p>swatmf: a set of python modules for SWAT-MODFLOW model (Bailey et al., 2016)
+parameter estimation and uncertainty analysis with the open-source suite PEST (Doherty 2010a
+and 2010b, and Doherty and other, 2010).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Seonggyu Park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
