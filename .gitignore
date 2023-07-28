@@ -1,7 +1,8 @@
+__pycache__
 .git
-.docs/_build/
-.docs/_static
-.docs/templates
+docs/_build/
+docs/_static
+docs/templates
 .ipynb_checkpoints
 .pytest_cache
 .vscode
