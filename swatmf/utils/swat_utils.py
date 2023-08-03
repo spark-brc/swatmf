@@ -9,9 +9,20 @@ from tqdm import tqdm
 class WeatherData(object):
     
     def __init__(self, wd):
+        """weather dataset
+
+        Args:
+            wd (path): weather dataset path
+        """
+        
         os.chdir(wd)
     
     def get_weather_folder_lists(self):
+        """return weather folder names and full paths
+
+        Returns:
+            str: return weather folder names and full paths
+        """
         wt_fds = [name for name in os.listdir(".") if os.path.isdir(name)]
         full_paths = [os.path.abspath(name) for name in os.listdir(".") if os.path.isdir(name)]
         return wt_fds, full_paths
