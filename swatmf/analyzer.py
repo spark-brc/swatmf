@@ -371,10 +371,10 @@ def dtw_df(start_date, grid_id, obd_nam, time_step=None):
     
     if time_step is None:
         time_step = "D"
-        mfobd_file = "dtw_day.obd"
+        mfobd_file = "dtw_day.obd.csv"
     else:
         time_step = "M"
-        mfobd_file = "dtw_mon.obd."
+        mfobd_file = "dtw_mon.obd.csv"
 
     mf_obs = pd.read_csv(
                         "modflow.obs",
@@ -385,12 +385,10 @@ def dtw_df(start_date, grid_id, obd_nam, time_step=None):
                         names = ["grid_id", "mf_elev"],)
     mfobd_df = pd.read_csv(
                         mfobd_file,
-                        sep='\s+',
                         index_col=0,
                         header=0,
                         parse_dates=True,
-                        na_values=[-999, ""],
-                        delimiter="\t")
+                        na_values=[-999, ""])
 
     grid_id_lst = mf_obs.index.astype(str).values.tolist()
     output_wt = pd.read_csv(
