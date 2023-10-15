@@ -41,9 +41,9 @@ setup(
         'opt_files': ['*'],
     },
     packages=find_packages(),
-    # install_requires=[
-    #     'pandas', 'numpy', 'pyemu', 'flopy', 'scipy', 'matplotlib', 'openpyxl',
-    #     'hydroeval', 'tqdm', 'termcolor', 'pyshp'],
+    install_requires=[
+        'pandas', 'numpy', 'pyemu', 'flopy', 'scipy', 'matplotlib', 'openpyxl',
+        'hydroeval', 'tqdm', 'termcolor', 'pyshp'],
     keywords=['python', 'SWAT-MODFLOW', 'PEST'],
     classifiers=[
         "Development Status :: 4 - Beta",
