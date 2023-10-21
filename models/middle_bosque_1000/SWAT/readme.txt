@@ -1,1 +1,0 @@
-swat2012 64-bit is in this directory

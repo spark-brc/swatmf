@@ -1,5 +1,0 @@
-# modflow.obs file is created by QSWATMOD2 plugin version 2.0.- 02/04/22 14:04:04 -
-3	                # Number of observation cells
-13	21	1	501	265.33	# Row, Col, Layer, grid_id, elevation 
-13	22	1	502	268.36	# Row, Col, Layer, grid_id, elevation 
-14	21	1	541	268.97	# Row, Col, Layer, grid_id, elevation 

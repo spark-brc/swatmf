@@ -1,5 +1,0 @@
-# modflow.par - extra parameters		
-NAME	CHG_TYPE	VAL
-riv_cond	pctchg	25
-riv_bot		pctchg	1
-evt_depth	absval	2
