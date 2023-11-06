@@ -25,7 +25,8 @@ foward_path = os.path.dirname(os.path.abspath( __file__ ))
 
 
 def create_swatmf_con(
-                wd, sim_start, warmup, cal_start, cal_end,
+                prj_dir, 
+                swatmf_model, sim_start, warmup, cal_start, cal_end,
                 subs=None, grids=None, riv_parm=None,
                 baseflow=None,
                 time_step=None,
@@ -35,7 +36,8 @@ def create_swatmf_con(
     """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
 
     Args:
-        wd (`str`): SWAT-MODFLOW working directory
+        prj_dir (`str`): Optimization project working directory
+        swatmf_model (`str`): SWAT-MODFLOW working directory
         subs (`list`): reach numbers to be extracted
         grids (`list`): grid numbers to be extracted
         sim_start (`str`): simulation start date e.g. '1/1/2000'
@@ -71,21 +73,23 @@ def create_swatmf_con(
 
 
     col01 = [
-        'wd', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
+        'prj_dir',
+        'swatmf_model', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
         'subs', 'grids',
         'riv_parm', 'baseflow',
         'time_step',
         'pp_included',
         ]
     col02 = [
-        wd, sim_start, warmup, cal_start, cal_end, 
+        prj_dir,
+        swatmf_model, sim_start, warmup, cal_start, cal_end, 
         subs, grids,
         riv_parm, baseflow,
         time_step,
         pp_included,
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
-    with open(os.path.join(wd, 'swatmf.con'), 'w', newline='') as f:
+    with open(os.path.join(prj_dir, 'main_opt', 'swatmf.con'), 'w', newline='') as f:
         f.write("# swatmf.con created by swatmf\n")
         df.to_csv(
             f, sep='\t',
@@ -93,7 +97,7 @@ def create_swatmf_con(
             index=False, header=False)
     return df
 
-def init_setup(wd, swatwd):
+def init_setup(prj_dir, swatmfwd, swatwd):
     filesToCopy = [
         "Absolute_SWAT_Values.txt",
         "i64pwtadj1.exe",
@@ -106,33 +110,50 @@ def init_setup(wd, swatwd):
         "Swat_Edit.exe",
         ]
     suffix = ' passed'
+    print(" Creating 'main_opt' folder in working directory ...",  end='\r', flush=True)
+
+    main_opt_path = os.path.join(prj_dir, 'main_opt')
+
+    if not os.path.isdir(main_opt_path):
+        os.makedirs(main_opt_path)
+        filelist = [f for f in os.listdir(swatmfwd) if os.path.isfile(os.path.join(swatmfwd, f))]
+        for i in tqdm(filelist):
+            # print(i)
+            # if os.path.getsize(os.path.join(swatwd, i)) != 0:
+            shutil.copy2(os.path.join(swatmfwd, i), main_opt_path)
+    print(" Creating 'main_opt' folder ..." + colored(suffix, 'green'))
+    # create backup
     print(" Creating 'backup' folder ...",  end='\r', flush=True)
-    if not os.path.isdir(os.path.join(wd, 'backup')):
-        os.makedirs(os.path.join(wd, 'backup'))
+    if not os.path.isdir(os.path.join(main_opt_path, 'backup')):
+        os.makedirs(os.path.join(main_opt_path, 'backup'))
         filelist = [f for f in os.listdir(swatwd) if os.path.isfile(os.path.join(swatwd, f))]
         
         # filelist =  os.listdir(swatwd)
         for i in tqdm(filelist):
             # print(i)
             # if os.path.getsize(os.path.join(swatwd, i)) != 0:
-            shutil.copy2(os.path.join(swatwd, i), os.path.join(wd, 'backup'))
+            shutil.copy2(os.path.join(swatwd, i), os.path.join(main_opt_path, 'backup'))
     print(" Creating 'backup' folder ..." + colored(suffix, 'green'))
+
+    # create echo
     print(" Creating 'echo' folder ...",  end='\r', flush=True)
-    if not os.path.isdir(os.path.join(wd, 'echo')):
-        os.makedirs(os.path.join(wd, 'echo'))
+    if not os.path.isdir(os.path.join(main_opt_path, 'echo')):
+        os.makedirs(os.path.join(main_opt_path, 'echo'))
     print(" Creating 'echo' folder ..." + colored(suffix, 'green'))
+    # create sufi2
     print(" Creating 'sufi2.in' folder ...",  end='\r', flush=True)
-    if not os.path.isdir(os.path.join(wd, 'sufi2.in')):
-        os.makedirs(os.path.join(wd, 'sufi2.in'))
+    if not os.path.isdir(os.path.join(main_opt_path, 'sufi2.in')):
+        os.makedirs(os.path.join(main_opt_path, 'sufi2.in'))
     print(" Creating 'sufi2.in' folder ..."  + colored(suffix, 'green'))
 
     for j in filesToCopy:
-        if not os.path.isfile(os.path.join(wd, j)):
-            shutil.copy2(os.path.join(opt_files_path, j), os.path.join(wd, j))
+        if not os.path.isfile(os.path.join(main_opt_path, j)):
+            shutil.copy2(os.path.join(opt_files_path, j), os.path.join(main_opt_path, j))
             print(" '{}' file copied ...".format(j) + colored(suffix, 'green'))
-    if not os.path.isfile(os.path.join(wd, 'forward_run.py')):
-        shutil.copy2(os.path.join(foward_path, 'forward_run.py'), os.path.join(wd, 'forward_run.py'))
-        print(" '{}' file copied ...".format('forward_run.py') + colored(suffix, 'green'))        
+    if not os.path.isfile(os.path.join(main_opt_path, 'forward_run.py')):
+        shutil.copy2(os.path.join(foward_path, 'forward_run.py'), os.path.join(main_opt_path, 'forward_run.py'))
+        print(" '{}' file copied ...".format('forward_run.py') + colored(suffix, 'green'))
+    os.chdir(main_opt_path)       
 
 def extract_day_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
     """extract a daily simulated streamflow from the output.rch file,
@@ -508,30 +529,6 @@ def model_in_to_template_file(tpl_file=None):
     return mod_df
 
 
-def fix_riv_pkg(wd, riv_file):
-    """ Delete duplicate river cells in an existing MODFLOW river packgage.
-
-    Args:
-        wd ('str'): path of the working directory.
-        riv_file ('str'): name of river package.
-    """
-
-    with open(os.path.join(wd, riv_file), "r") as fp:
-        lines = fp.readlines()
-        new_lines = []
-        for line in lines:
-            #- Strip white spaces
-            line = line.strip()
-            if line not in new_lines:
-                new_lines.append(line)
-            else:
-                print('here')
-
-    output_file = "{}_fixed".format(riv_file)
-    with open(os.path.join(wd, output_file), "w") as fp:
-        fp.write("\n".join(new_lines))    
-
-
 def riv_par_to_template_file(riv_par_file, tpl_file=None):
     """write a template file for a SWAT parameter value file (model.in).
 
@@ -568,6 +565,29 @@ def riv_par_to_template_file(riv_par_file, tpl_file=None):
                                                         header=False,
                                                         justify="left"))
     return mf_par_df
+
+def fix_riv_pkg(wd, riv_file):
+    """ Delete duplicate river cells in an existing MODFLOW river packgage.
+
+    Args:
+        wd ('str'): path of the working directory.
+        riv_file ('str'): name of river package.
+    """
+
+    with open(os.path.join(wd, riv_file), "r") as fp:
+        lines = fp.readlines()
+        new_lines = []
+        for line in lines:
+            #- Strip white spaces
+            line = line.strip()
+            if line not in new_lines:
+                new_lines.append(line)
+            else:
+                print(line)
+
+    output_file = "{}_fixed".format(riv_file)
+    with open(os.path.join(wd, output_file), "w") as fp:
+        fp.write("\n".join(new_lines))    
 
 
 def _remove_readonly(func, path, excinfo):

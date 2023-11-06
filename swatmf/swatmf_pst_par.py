@@ -5,6 +5,7 @@ from datetime import datetime
 import pandas as pd
 from pyemu.pst.pst_utils import SFMT,IFMT,FFMT
 from tqdm import tqdm
+import numpy as np
 
 
 wd = os.getcwd()
@@ -19,12 +20,15 @@ def create_riv_par(wd, chns, chg_type=None, rivcd=None, rivbot=None, val=None):
     if chg_type is None:
         chg_type = 'unfchg'
     if val is None:
-        val = 0.001
+        val = 0.00001
     riv_f = rivcd + rivbot
     df = pd.DataFrame()
     df['parnme'] = riv_f
     df['chg_type'] = chg_type
     df['val'] = val
+    for i in range(len(df)):
+        if (df.iloc[i, 0][:5]) == 'rivcd':
+            df.iloc[i, 1] = 'pctchg'
     df.index = df.parnme
     with open('mf_riv.par', 'w') as f:
         f.write("# modflow_par file.\n")
@@ -85,7 +89,8 @@ def riv_par(wd):
         # BUG: change hard code skiprows = 3 
         # read riv pacakge
         df_riv = pd.read_csv('riv_package.org', sep=r'\s+', skiprows=3, header=None)
-
+        # BUG: prevent 3rd column gets float 
+        df_riv.iloc[:, 2] = df_riv.iloc[:, 2].map(lambda x: '{:.0f}'.format(x))
         # read mf_riv_par.par
         riv_pars = read_modflow_par(wd)
 
@@ -119,10 +124,19 @@ def riv_par(wd):
                     if df_riv.iloc[j, -1] == riv_pars.iloc[i, 3]:
                         df_riv.iloc[j, 5] = new_rivbot.iloc[count]
                         count += 1
-
+        
+        # for i in range(len(df_riv)):
+        #     if (df_riv.iloc[i, 2]):
+        #         print(df_riv.iloc[i, 2])
+        #         df_riv.iloc[i, 2] = df_riv.iloc[i, 2].astype('int')
+        #     else:
+        #         df_riv.iloc[i, 2] = 'nan'
+        # df_riv.iloc[:, 2] = df_riv.iloc[:, 2].astype('int')
         df_riv.iloc[:, 4] = df_riv.iloc[:, 4].map(lambda x: '{:.10e}'.format(x))
         df_riv.iloc[:, 3] = df_riv.iloc[:, 3].map(lambda x: '{:.10e}'.format(x))
         df_riv.iloc[:, 5] = df_riv.iloc[:, 5].map(lambda x: '{:.10e}'.format(x))
+        df_riv = df_riv.replace('nan', '', regex=True)
+        # df_riv = df_riv.replace(np.nan, '', regex=True)
 
         # ------------ Export Data to file -------------- #
         version = "version 1.2."
@@ -137,7 +151,8 @@ def riv_par(wd):
                         f, sep='\t',
                         header=False,
                         index=False,
-                        line_terminator='\n',
+                        lineterminator='\n',
+                        na_rep='',
                         encoding='utf-8'
                         )
         print(os.path.basename(riv_f) + " file is overwritten successfully!")
