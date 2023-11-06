@@ -508,6 +508,30 @@ def model_in_to_template_file(tpl_file=None):
     return mod_df
 
 
+def fix_riv_pkg(wd, riv_file):
+    """ Delete duplicate river cells in an existing MODFLOW river packgage.
+
+    Args:
+        wd ('str'): path of the working directory.
+        riv_file ('str'): name of river package.
+    """
+
+    with open(os.path.join(wd, riv_file), "r") as fp:
+        lines = fp.readlines()
+        new_lines = []
+        for line in lines:
+            #- Strip white spaces
+            line = line.strip()
+            if line not in new_lines:
+                new_lines.append(line)
+            else:
+                print('here')
+
+    output_file = "{}_fixed".format(riv_file)
+    with open(os.path.join(wd, output_file), "w") as fp:
+        fp.write("\n".join(new_lines))    
+
+
 def riv_par_to_template_file(riv_par_file, tpl_file=None):
     """write a template file for a SWAT parameter value file (model.in).
 
