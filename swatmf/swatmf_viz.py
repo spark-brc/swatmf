@@ -385,7 +385,7 @@ def dtw_df(start_date, grid_id, obd_nam, time_step=None):
                         names = ["grid_id", "mf_elev"],)
     mfobd_df = pd.read_csv(
                         mfobd_file,
-                        sep='\s+',
+                        sep=r'\s+',
                         index_col=0,
                         header=0,
                         parse_dates=True,
@@ -445,7 +445,7 @@ def wt_df(start_date, grid_id, obd_nam, time_step=None, prep_sub=None):
                         names = ["grid_id", "mf_elev"],)
     mfobd_df = pd.read_csv(
                         "MODFLOW/" + mfobd_file,
-                        sep='\s+',
+                        sep=r'\s+',
                         index_col=0,
                         header=0,
                         parse_dates=True,
@@ -574,7 +574,7 @@ def wt_tot_df(sim_start, df_start, df_end, grid_ids, obd_nams, time_step=None):
                         names = ["grid_id", "mf_elev"],)
     mfobd_df = pd.read_csv(
                         "MODFLOW/" + mfobd_file,
-                        sep='\s+',
+                        sep=r'\s+',
                         index_col=0,
                         header=0,
                         parse_dates=True,
