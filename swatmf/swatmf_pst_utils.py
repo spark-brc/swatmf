@@ -89,6 +89,10 @@ def create_swatmf_con(
         pp_included,
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
+
+    main_opt_path = os.path.join(prj_dir, 'main_opt')
+    if not os.path.isdir(main_opt_path):
+        os.makedirs(main_opt_path)
     with open(os.path.join(prj_dir, 'main_opt', 'swatmf.con'), 'w', newline='') as f:
         f.write("# swatmf.con created by swatmf\n")
         df.to_csv(
@@ -116,11 +120,11 @@ def init_setup(prj_dir, swatmfwd, swatwd):
 
     if not os.path.isdir(main_opt_path):
         os.makedirs(main_opt_path)
-        filelist = [f for f in os.listdir(swatmfwd) if os.path.isfile(os.path.join(swatmfwd, f))]
-        for i in tqdm(filelist):
-            # print(i)
-            # if os.path.getsize(os.path.join(swatwd, i)) != 0:
-            shutil.copy2(os.path.join(swatmfwd, i), main_opt_path)
+    filelist = [f for f in os.listdir(swatmfwd) if os.path.isfile(os.path.join(swatmfwd, f))]
+    for i in tqdm(filelist):
+        # print(i)
+        # if os.path.getsize(os.path.join(swatwd, i)) != 0:
+        shutil.copy2(os.path.join(swatmfwd, i), main_opt_path)
     print(" Creating 'main_opt' folder ..." + colored(suffix, 'green'))
     # create backup
     print(" Creating 'backup' folder ...",  end='\r', flush=True)
