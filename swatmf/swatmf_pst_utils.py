@@ -569,6 +569,9 @@ def riv_par_to_template_file(riv_par_file, tpl_file=None):
                                                         header=False,
                                                         justify="left"))
     return mf_par_df
+    # df_p.iloc[:, 0] = df_p.iloc[:, 0].map(lambda x: '{:<12s}'.format(x))
+    # df_p.iloc[:, 2] = df_p.iloc[:, 2].map(lambda x: '{:<12.5e}'.format(x))
+
 
 def fix_riv_pkg(wd, riv_file):
     """ Delete duplicate river cells in an existing MODFLOW river packgage.
