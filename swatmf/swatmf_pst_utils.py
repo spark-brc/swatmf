@@ -329,6 +329,107 @@ def extract_depth_to_water(grid_ids, start_day, end_day, time_step="day"):
         print('dtw_{}.txt file has been created...'.format(i))
     print('Finished ...')
 
+def extract_avg_depth_to_water(
+                grid_ids, start_day, 
+                avg_stdate, avg_eddate,
+                time_step="day"
+                ):
+    """extract a simulated depth to water using modflow.obs and swatmf_out_MF_obs,
+        store it in each channel file.
+
+    Args:
+        - rch_file (`str`): the path and name of the existing output file
+        - channels (`list`): channel number in a list, e.g. [9, 60]
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1985'
+        - end_day ('str'): simulation end day e.g. '12/31/2000'
+
+    Example:
+        pest_utils.extract_depth_to_water('path', [9, 60], '1/1/1993', '12/31/2000')
+    """
+    if not os.path.exists('swatmf_out_MF_obs'):
+        raise Exception("'swatmf_out_MF_obs' file not found")
+    if not os.path.exists('modflow.obs'):
+        raise Exception("'modflow.obs' file not found")
+    mf_obs_grid_ids = pd.read_csv(
+                        'modflow.obs',
+                        sep=r'\s+',
+                        usecols=[3, 4],
+                        skiprows=2,
+                        header=None
+                        )
+    col_names = mf_obs_grid_ids.iloc[:, 0].tolist()
+
+    # set index by modflow grid ids
+    mf_obs_grid_ids = mf_obs_grid_ids.set_index([3])
+
+    mf_sim = pd.read_csv(
+                        'swatmf_out_MF_obs', skiprows=1, sep=r'\s+',
+                        names=col_names,
+                        # usecols=grid_ids,
+                        )
+    mf_sim.index = pd.date_range(start_day, periods=len(mf_sim))
+    # mf_sim = mf_sim[avg_stdate:avg_eddate]
+    if time_step == "day":
+        mf_sim = mf_sim[avg_stdate:avg_eddate].mean()
+    # if time_step == "month":
+    #     mf_sim = mf_sim[avg_stdate:avg_eddate].resample('M').mean()
+    df_avg = pd.DataFrame()
+    dtws = []
+    for i in grid_ids:
+        elev = mf_obs_grid_ids.loc[i, 4]
+        dtws.append(mf_sim.loc[i] - elev)
+    df_avg = pd.DataFrame()
+    df_avg['grid_ids'] = grid_ids
+    df_avg['sims'] = dtws
+    df_avg.to_csv("dtw_avg.txt", sep='\t', index=False, header=False, float_format='%.7e')
+
+        # use land surface elevation to get depth to water
+        # (mf_sim.loc[:, i] - elev).to_csv(
+        #                 'dtw_{}.txt'.format(i), sep='\t', encoding='utf-8',
+        #                 index=True, header=False, float_format='%.7e'
+        #                 )
+        # print('dtw_{}.txt file has been created...'.format(i))
+    # print('Finished ...')
+
+def mf_avg_obd_to_ins(wt_file=None):
+    """extract a simulated groundwater levels from the  file,
+        store it in each channel file.
+
+    Args:
+        - rch_file (`str`): the path and name of the existing output file
+        - channels (`list`): channel number in a list, e.g. [9, 60]
+        - start_day ('str'): simulation start day after warmup period, e.g. '1/1/1993'
+        - end_day ('str'): simulation end day e.g. '12/31/2000'
+
+    Example:
+        pest_utils.extract_month_str('path', [9, 60], '1/1/1993', '12/31/2000')
+    """ 
+    if wt_file is None:
+        wt_file = "dtw_avg.txt"
+    mf_obd_file = "dtw_avg.obd.csv"
+    col_name = "avg_dtw"
+    
+    mf_obd = pd.read_csv(
+                        mf_obd_file,
+                        index_col=0,
+                        )
+    wt_sim = pd.read_csv(
+                        wt_file,
+                        delim_whitespace=True,
+                        names=['grid_id', 'dtw_avg_sim'],
+                        index_col=0,
+                        )
+    result = pd.concat([mf_obd, wt_sim], axis=1)
+    result['ins'] = (
+                    'l1 w !{}_'.format(col_name) + result.index.map(str) + '!'
+                    )
+    result['{}_ins'.format(col_name)] = np.where(result[col_name].isnull(), 'l1', result['ins'])
+    with open(wt_file+'.ins', "w", newline='') as f:
+        f.write("pif ~" + "\n")
+        result['{}_ins'.format(col_name)].to_csv(f, sep='\t', encoding='utf-8', index=False, header=False)
+    print('{}.ins file has been created...'.format(wt_file))
+    return result['{}_ins'.format(col_name)]
+
 
 def stf_obd_to_ins(srch_file, col_name, cal_start, cal_end, time_step=None):
     """extract a simulated streamflow from the output.rch file,
@@ -526,7 +627,7 @@ def model_in_to_template_file(tpl_file=None):
         SFMT_LONG = lambda x: "{0:<50s} ".format(str(x))
         f.write(mod_df.loc[:, ["parnme", "tpl"]].to_string(
                                                         col_space=0,
-                                                        formatters=[SFMT, SFMT],
+                                                        formatters=[SFMT_LONG, SFMT_LONG],
                                                         index=False,
                                                         header=False,
                                                         justify="left"))
@@ -784,4 +885,13 @@ def cvt_stf_day_month_obd(obd_file):
         'stf_mon.obd.csv', index=True, index_label="date", na_rep=-999, float_format='%.7e')
     print("done ...")
     
-    
+if __name__ == '__main__':
+    wd = "D:/Projects/Watersheds/MiddleBosque/Analysis/SWAT-MODFLOWs/optimization/main_opt"
+    stdate = '1/1/1982'
+    eddate = '12/31/1986'
+    grid_ids = [5698, 5699]
+    avg_stdate = '8/1/1985'
+    avg_eddate = '8/31/1985'
+    # print(os.path.abspath(swatmf.__file__))
+    os.chdir(wd)
+    mf_avg_obd_to_ins()

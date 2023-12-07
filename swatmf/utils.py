@@ -12,6 +12,7 @@ import numpy as np
 # import h5py as hdf
 import os 
 import datetime
+from tqdm import tqdm
 
 def define_sim_period():
     if os.path.isfile("file.cio"):
@@ -449,12 +450,77 @@ def cvt_bas_array(wd, infile, nrows, ncols):
     print(bas)
 
 
+def cvt_usgs_stf_obd(wd, fnam, stdate, eddate, colnam):
+    df = pd.read_csv(os.path.join(wd, fnam), sep='\t', comment='#', header=0)
+    df = df[df['agency_cd']=='USGS']
+    df = df.drop(['agency_cd', f'{colnam}_cd'], axis=1)
+    sites = df['site_no'].unique()
+    dff = pd.DataFrame()
+    dff['date'] = pd.date_range(stdate, eddate)
+    dff = dff.set_index('date')
+    for i in tqdm(sites):
+        data = df[df['site_no']==str(i)]
+        data.index = data.datetime
+        # current data index is not datetimeindex so you need to convert it
+        data.index = pd.to_datetime(data.index)
+        data = data[~data.index.duplicated(keep='first')]
+        data = data.drop(['site_no', 'datetime'], axis=1)
+        data = data[str(colnam)]
+        data.rename(str(i), inplace=True)
+        # print(data)
+        # data = data.rename({colnam: i}, axis=1)
+        # data = data[str(i)]
+        # print(data)
+        # data = data.replace({i:['Ice','Ssn', 'Dis']}, np.nan)
+        # convert cfs to cms
+        data = data.astype('float')*0.0283
+        dff = pd.concat([dff, data], axis=1, sort=True)
+    dff.index.name = 'date'
+    dff = dff.astype('float')
+    # dff.dtypes
+    dff.to_csv(os.path.join(wd, "stf_day.obd2.csv"), na_rep=-999)
+
+def create_model_in(wd, excel_file):
+    df = pd.read_excel(os.path.join(wd, excel_file), dtype=str, names=[0,1,2,3])
+    df['left_col'] = df.iloc[:, [0,1,2]].fillna('').sum(axis=1)
+    df['right_col'] = df.iloc[:, 3].astype(float).map(lambda x: '{:<12.10e}'.format(x))
+    SFMT_LONG = lambda x: "{0:<50s} ".format(str(x))
+    with open(os.path.join(wd, "model.in"), 'w') as f:
+        f.write(df.loc[:, ["left_col", "right_col"]].to_string(
+                                                    col_space=0,
+                                                    formatters=[SFMT_LONG, SFMT_LONG],
+                                                    index=False,
+                                                    header=False,
+                                                    justify="left"
+                                                    )
+                )
+    print(df)
+
+
+def create_model_in_tpl(wd, excel_file):
+    df = pd.read_excel(os.path.join(wd, excel_file), sheet_name="Sheet2", dtype=str, names=[0,1,2,3])
+    df['left_col'] = df.iloc[:, [0,1,2]].fillna('').sum(axis=1)
+    df['right_col'] = df.iloc[:, 3].map(lambda x: " ~   {0:15s}   ~".format(x))
+    SFMT_LONG = lambda x: "{0:<50s} ".format(str(x))
+    with open(os.path.join(wd, "model.in.tpl"), 'w') as f:
+        f.write(df.loc[:, ["left_col", "right_col"]].to_string(
+                                                    col_space=0,
+                                                    formatters=[SFMT_LONG, SFMT_LONG],
+                                                    index=False,
+                                                    header=False,
+                                                    justify="left"
+                                                    )
+                )
+    print(df)
 
 if __name__ == '__main__':
-    wd = "D:/Projects/Watersheds/Gumu/Analysis/APEX-MODFLOWs/qsm_50_rt_test/qsm_50/SWAT-MODFLOW"
-    infile = "mf_50.bas"
-    nrows = 123
-    ncols = 62
+    wd = "D:/Projects/Watersheds/MiddleBosque"
+    infile = "streamflow_obd_usgs.txt"
+    stdate = '1/1/1980'
+    eddate = '12/31/2022'
+    colnam = "135053_00060_00003"
+    excel_file = 'swat_pars.xlsx'
+    # sites = ['08095300']
 
     # print(os.path.abspath(swatmf.__file__))
-    cvt_bas_array(wd, infile, nrows, ncols)
+    create_model_in_tpl(wd, excel_file)
