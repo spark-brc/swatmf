@@ -6,6 +6,7 @@ import os
 from hydroeval import evaluator, nse, rmse, pbias
 import numpy as np
 import math
+import matplotlib.dates as mdates
 
 
 def get_all_scenario_lists(wd):
@@ -842,3 +843,73 @@ def plot_prior_posterior_par_hist(prior_df, post_df, sel_pars, width=7, height=5
             ax.set_yticks([])
     plt.xlabel("Parameter range")
     plt.show()
+
+
+
+
+# scratches for QSWATMOD
+# read data first
+def read_stf_obd(wd, obd_file):
+    return pd.read_csv(
+        os.path.join(wd, obd_file),
+        index_col=0,
+        header=0,
+        parse_dates=True,
+        na_values=[-999, ""]
+    )
+
+def read_output_rch_data(wd, colNum=6):
+    return pd.read_csv(
+        os.path.join(wd, "output.rch"),
+        delim_whitespace=True,
+        skiprows=9,
+        usecols=[1, 3, colNum],
+        names=["date", "filter", "stf_sim"],
+        index_col=0
+    )
+
+def update_index(df, startDate, ts):
+    if ts.lower() == "day":
+        df.index = pd.date_range(startDate, periods=len(df.stf_sim))
+    elif ts.lower() == "month":
+        df = df[df['filter'] < 13]
+        df.index = pd.date_range(startDate, periods=len(df.stf_sim), freq="M")
+    else:
+        df.index = pd.date_range(startDate, periods=len(df.stf_sim), freq="A")
+    return df
+
+def plot_simulated(ax, wd, subnum, startDate, ts):
+    output_rch = read_output_rch_data(wd)
+    df = output_rch.loc[subnum]
+    try:
+        df = update_index(df, startDate, ts)
+        ax.plot(df.index.values, df.stf_sim.values, c='g', lw=1, label="Simulated")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
+    except Exception as e:
+        handle_exception(ax, str(e))
+
+
+def handle_exception(ax, exception_message):
+    ax.text(
+        .5, .5, exception_message,
+        fontsize=12, horizontalalignment='center', weight='extra bold', color='y', transform=ax.transAxes
+    )
+
+def plot_(wd, subnum, startDate, ts):
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.set_ylabel(r'Stream Discharge $[m^3/s]$', fontsize=8)
+    ax.tick_params(axis='both', labelsize=8)
+    plot_simulated(ax, wd, subnum, startDate, ts)
+    plt.show()
+
+# def plot_tot():
+if __name__ == '__main__':
+    wd = "D:\\Projects\\Watersheds\\Koksilah\\analysis\\koksilah_swatmf\\SWAT-MODFLOW"
+    stfs = {3: "sub03"}
+    dtws = {431: "g_431", 4011: "g_431"}
+    startDate = '1/1/2013'
+    ts ="day"
+    keysList = list(dtws.values())
+    print(keysList)
+    # plot_(wd, subnum, startDate, ts)
+
