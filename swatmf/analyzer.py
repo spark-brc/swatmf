@@ -7,6 +7,7 @@ from hydroeval import evaluator, nse, rmse, pbias
 import numpy as np
 import math
 import matplotlib.dates as mdates
+from swatmf.handler import SWATMFout
 
 
 def get_all_scenario_lists(wd):
@@ -914,10 +915,6 @@ def plot_stf_obd(ax, wd, obd_file, startDate, subnum, ts, obd_col):
     #     handle_exception(ax, str(e))
 
 
-
-
-
-
 # NOTE: metrics =======================================================================================
 def calculate_metrics(ax, df3, obd_col):
     r_squared = ((sum((df3[obd_col] - df3[obd_col].mean()) * (df3.stf_sim - df3.stf_sim.mean())))**2) / (
@@ -972,17 +969,25 @@ def plot_(wd, subnum, startDate, ts, obd_file, obd_col):
 
 # def plot_tot():
 if __name__ == '__main__':
-    wd = "/Users/seonggyu.park/Documents/projects/kokshila/swatmf_results"
-    stfs = {3: "sub03"}
-    dtws = {431: "g_431", 4011: "g_431"}
-    subnum = 3
+    # wd = "/Users/seonggyu.park/Documents/projects/kokshila/swatmf_results"
+    wd = "D:\\Projects\\Watersheds\\Koksilah\\analysis\\koksilah_swatmf\\SWAT-MODFLOW"
     obd_file = "stf_day.obd.csv"
-    obd_col = "sub03"
 
-    startDate = '1/1/2013'
-    ts ="day"
-    keysList = list(dtws.values())
-    # print(keysList)
-    plot_(wd, subnum, startDate, ts, obd_file, obd_col)
+    m1 = SWATMFout(wd)
+    print(m1.get_stf_sim_obd(obd_file))
+    # print(m1)
+
+
+    # stfs = {3: "sub03"}
+    # dtws = {431: "g_431", 4011: "g_431"}
+    # subnum = 3
+
+    # obd_col = "sub03"
+
+    # startDate = '1/1/2013'
+    # ts ="day"
+    # keysList = list(dtws.values())
+    # # print(keysList)
+    # plot_(wd, subnum, startDate, ts, obd_file, obd_col)
 
 

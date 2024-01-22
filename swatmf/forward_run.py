@@ -44,7 +44,7 @@ def execute_swatmf():
     des = "running model"
     time_stamp(des)
     # pyemu.os_utils.run('APEX-MODFLOW3.exe >_s+m.stdout', cwd='.')
-    pyemu.os_utils.run('SWAT-MODFLOW3', cwd='.')
+    pyemu.os_utils.run('swatmf_rel230922.exe', cwd='.')
 
 def extract_stf_results(subs, sim_start, warmup, cal_start, cal_end):
     if time_step == 'day':
@@ -60,6 +60,17 @@ def extract_gw_level_results(grids, sim_start, cal_end):
     des = "simulation successfully completed | extracting depth to water values"
     time_stamp(des)
     swatmf_pst_utils.extract_depth_to_water(grids, sim_start, cal_end)
+    
+def extract_avg_depth_to_water(
+                avg_grids, start_day, 
+                avg_stdate, avg_eddate,
+                ):
+    des = "simulation successfully completed | extracting average depth to water values"
+    time_stamp(des)
+    swatmf_pst_utils.extract_avg_depth_to_water(
+                                avg_grids, start_day, 
+                                avg_stdate, avg_eddate,
+                                time_step="day")
 
 def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
     des = "simulation successfully completed | calculating baseflow ratio"
@@ -67,9 +78,7 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
     swatmf_pst_utils.extract_month_baseflow(subs, sim_start, cal_start, cal_end)
 
 if __name__ == '__main__':
-
     os.chdir(wd)
-
     swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")
     # get default vals
     # wd = swatmf_con.loc['wd', 'vals']
@@ -83,6 +92,7 @@ if __name__ == '__main__':
     baseflow_act = swatmf_con.loc['baseflow', 'vals']
     time_step = swatmf_con.loc['time_step','vals']
     pp_act = swatmf_con.loc['pp_included', 'vals']
+
     
     # modifying river pars
     if swatmf_con.loc['riv_parm', 'vals'] != 'n':
@@ -104,6 +114,15 @@ if __name__ == '__main__':
         grids = swatmf_con.loc['grids','vals'].strip('][').split(', ')
         grids = [int(i) for i in grids]        
         extract_gw_level_results(grids, sim_start, cal_end)
+    # NOTE: this is a temporary function
+    if swatmf_con.loc['avg_grids', 'vals'] != 'n':
+        avg_grids = swatmf_con.loc['avg_grids','vals'].strip('][').split(', ')
+        avg_grids = [int(i) for i in avg_grids]    
+
+        avg_stdate = swatmf_con.loc['avg_dtw_stdate', 'vals']
+        avg_eddate = swatmf_con.loc['avg_dtw_eddate', 'vals']
+        extract_avg_depth_to_water(avg_grids, sim_start, avg_stdate, avg_eddate)
+
     print(wd)
 
 
