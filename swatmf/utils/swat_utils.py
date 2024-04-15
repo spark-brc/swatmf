@@ -165,7 +165,6 @@ class WeatherData(object):
                         fp.write(l+"\n")
 
 
-
     def cvt_tmp_each2(self, output_wd, tmp_nloc, tmp_file=None):
         if tmp_file is None:
             tmp_file = 'Tmp1.Tmp'
@@ -199,3 +198,92 @@ class WeatherData(object):
                 with open(f'TMP_{i+1:03d}.txt', 'w') as fp:
                     for l in abf:
                         fp.write(l+"\n")
+
+class SwatEdit(object):
+
+    def read_swatcal(self):
+        swatcalfile = "swatcalparms.cal"
+        y = ("#") # Remove unnecssary lines
+        with open(swatcalfile, "r") as f:
+            data = [x.strip() for x in f if x.strip() and not x.strip().startswith(y)] # Remove blank lines     
+        rowsnum = data[0]
+        df = pd.read_csv(swatcalfile, sep=r'\s+',  comment="#", header=1)
+        df = df.iloc[:int(rowsnum)]
+        df['real_val'] = df['VAL'] + df['OFFSET']
+
+        # create model.in
+        with open("model.in", 'w') as f:
+            # f.write("{0:10d} #NP\n".format(mod_df.shape[0]))
+            SFMT_LONG = lambda x: "{0:<50s} ".format(str(x))
+            f.write(df.loc[:, ["NAME", "real_val"]].to_string(
+                                                        col_space=0,
+                                                        formatters=[SFMT_LONG, SFMT_LONG],
+                                                        index=False,
+                                                        header=False,
+                                                        justify="left"))
+
+def modify_sol(back_dir, output_dir):
+
+    ext = "sol"
+    dir_list = os.listdir(back_dir)
+    files_all = [
+                x for x in dir_list if (x.endswith('.{}'.format(ext)) and 
+                not x.startswith('output'))
+                ]
+    
+    var_list = ['SNAM', 'HYDGRP', 'SOL_ZMX', 'ANION_EXCL', 'SOL_CRK', 'TEXTURE',
+                'SOL_Z', 'SOL_BD', 'SOL_AWC', 'SOL_K', 'SOL_CBN', 'SOL_CLAY', 'SOL_SILT',
+                'SOL_SAND', 'SOL_ROCK', 'SOL_ALB', 'USLE_K', 'SOL_EC', 'SOL_CAL', 'SOL_PH']
+    n_line = 9
+    txtformat = '12.2f'
+                    
+    for fl in tqdm(files_all):
+        with open(os.path.join(back_dir, fl), 'r', encoding='ISO-8859-1') as f:
+            data = f.readlines()
+        line = data[n_line]
+        parts = line.split(':')
+        num = parts[1].strip()
+        nums = num.split()
+        # change percentage to ratio
+        nums2 = []
+        for nm in nums:
+            if float(nm) > 1:
+                nm = float(nm)/100
+                nums2.append(nm)
+            else:
+                nums2.append(nm)
+
+
+
+        part1 = ''.join(['{:{}}'.format(float(x), txtformat) for x in nums2])
+        new_line = '{part1}:{part2}\n'.format(part1=parts[0], part2=part1)
+        data[n_line] = new_line
+        with open(os.path.abspath(output_dir + '/' + fl), "w") as f:
+            f.writelines(data)
+    
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    # wd = "/Users/seonggyu.park/Documents/projects/kokshila/swatmf_results"
+    wd = "D:\\tmp\\swatmf_dir\\backup"
+    outwd = "D:\\tmp\\sols_modified"
+
+    modify_sol(wd, outwd)
+
+
+
+    #     sim_stf = pd.read_csv(
+    #                     swatcalfile,
+    #                     delim_whitespace=True,
+    #                     skiprows=9,
+    #                     usecols=[1, 3, 6],
+    #                     names=["date", "filter", "stf_sim"],
+    #                     index_col=0)        
+    
+    # # def create_model_in(self):
+

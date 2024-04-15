@@ -10,6 +10,9 @@ import subprocess
 
 from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
+from swatmf.handler import SWATMFout
+from swatmf.utils import swat_configs
+
 
 wd = os.getcwd()
 os.chdir(wd)
@@ -33,12 +36,12 @@ def modify_hk_sy_pars_pp(pp_included):
         outfile = i + '.ref'
         pyemu.utils.geostats.fac2real(i, factors_file=i+'.fac', out_file=outfile)
 
-def execute_swat_edit():
-    des = "modifying SWAT parameters"
-    # time_stamp(des)
-    # pyemu.os_utils.run('Swat_Edit.exe', cwd='.')
-    p = subprocess.Popen('Swat_Edit.exe' , cwd = '.')
-    p.wait()
+# def execute_swat_edit():
+#     des = "modifying SWAT parameters"
+#     # time_stamp(des)
+#     # pyemu.os_utils.run('Swat_Edit.exe', cwd='.')
+#     p = subprocess.Popen('Swat_Edit.exe' , cwd = '.')
+#     p.wait()
 
 def execute_swatmf():
     des = "running model"
@@ -79,7 +82,9 @@ def extract_baseflow_results(subs, sim_start, cal_start, cal_end):
 
 if __name__ == '__main__':
     os.chdir(wd)
-    swatmf_con = pd.read_csv('swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#")
+    swatmf_con = pd.read_csv(
+        'swatmf.con', sep='\t', names=['names', 'vals'], index_col=0, comment="#"
+        )
     # get default vals
     # wd = swatmf_con.loc['wd', 'vals']
     sim_start = swatmf_con.loc['sim_start', 'vals']
@@ -93,7 +98,6 @@ if __name__ == '__main__':
     time_step = swatmf_con.loc['time_step','vals']
     pp_act = swatmf_con.loc['pp_included', 'vals']
 
-    
     # modifying river pars
     if swatmf_con.loc['riv_parm', 'vals'] != 'n':
         modify_riv_pars()
@@ -101,8 +105,16 @@ if __name__ == '__main__':
         pp_included = swatmf_con.loc['pp_included','vals'].strip('][').split(', ')
         pp_included = [i.replace("'", "").strip() for i in pp_included]  
         modify_hk_sy_pars_pp(pp_included)
+    
+    # update SWAT parameters
+    m1 = swat_configs.SwatEdit(wd)
+    subbasins = [i for i in range(1, 198)] # NOTE: this is a hard code for koksilah
+    new_parms = m1.read_new_parms()
+    m1.param = [new_parms]
+    m1.subbasins = [subbasins]
+    m1.update_swat_parms()
+
     # execute model
-    execute_swat_edit()
     execute_swatmf()
     # extract sims
     # if swatmf_con.loc['cha_file', 'vals'] != 'n' and swatmf_con.loc['fdc', 'vals'] != 'n':
@@ -114,18 +126,25 @@ if __name__ == '__main__':
         grids = swatmf_con.loc['grids','vals'].strip('][').split(', ')
         grids = [int(i) for i in grids]        
         extract_gw_level_results(grids, sim_start, cal_end)
+
+    if swatmf_con.loc['grids_lyrs', 'vals'] !='n':
+        # grids = swatmf_con.loc['grids_lyrs','vals'].strip('][').split(', ')
+        # grids = [int(i) for i in grids] 
+        m1 = SWATMFout(wd)
+        df =  m1.get_gw_sim()
+        for col in df.columns:
+            df.loc[:, col].to_csv(
+                            '{}.txt'.format(col), sep='\t', encoding='utf-8',
+                            index=True, header=False, float_format='%.7e'
+                            )
+        print("GW sim extraction finished ...")
+
     # NOTE: this is a temporary function
     if swatmf_con.loc['avg_grids', 'vals'] != 'n':
         avg_grids = swatmf_con.loc['avg_grids','vals'].strip('][').split(', ')
         avg_grids = [int(i) for i in avg_grids]    
-
         avg_stdate = swatmf_con.loc['avg_dtw_stdate', 'vals']
         avg_eddate = swatmf_con.loc['avg_dtw_eddate', 'vals']
         extract_avg_depth_to_water(avg_grids, sim_start, avg_stdate, avg_eddate)
 
     print(wd)
-
-
-
-
-

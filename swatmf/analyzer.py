@@ -7,7 +7,13 @@ from hydroeval import evaluator, nse, rmse, pbias
 import numpy as np
 import math
 import matplotlib.dates as mdates
-from swatmf.handler import SWATMFout
+
+from matplotlib.gridspec import GridSpec
+from matplotlib.patches import Rectangle
+import matplotlib.gridspec as gridspec
+from swatmf import handler
+import pyemu
+
 
 
 def get_all_scenario_lists(wd):
@@ -818,26 +824,35 @@ def plot_tseries_ensembles(
     # fig.tight_layout()
     plt.show()
 
+    
+def get_par_offset(pst):
+    pars = pst.parameter_data.copy()
+    pars = pars.loc[:, ["parnme", "offset"]]
+    return pars
 
-def plot_prior_posterior_par_hist(prior_df, post_df, sel_pars, width=7, height=5, ncols=3):
+def plot_prior_posterior_par_hist(
+                    pst, prior_df, post_df, sel_pars,
+                    width=7, height=5, ncols=3):
     nrows = math.ceil(len(sel_pars)/ncols)
+    pars_info = get_par_offset(pst)
     fig, axes = plt.subplots(figsize=(width, height), nrows=nrows, ncols=ncols)
     ax1 = fig.add_subplot(111, frameon=False)
     ax1 = plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
     for i, ax in enumerate(axes.flat):
         if i<len(sel_pars):
             colnam = sel_pars['parnme'].tolist()[i]
-            ax.hist(prior_df.loc[:, colnam].values,
+            offset = pars_info.loc[colnam, "offset"]
+            ax.hist(prior_df.loc[:, colnam].values + offset,
                     bins=np.linspace(
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0], 
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0], 20),
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0] + offset, 
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0] + offset , 20),
                     color = "gray", alpha=0.5, density=True,
                     label="Prior"
             )
-            y, x, _ = ax.hist(post_df.loc[:, colnam].values,
+            y, x, _ = ax.hist(post_df.loc[:, colnam].values + offset,
                     bins=np.linspace(
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0], 
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0], 20), 
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0] + offset, 
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0] + offset, 20), 
                      alpha=0.5, density=True, label="Posterior"
             )
             ax.set_ylabel(colnam)
@@ -845,74 +860,56 @@ def plot_prior_posterior_par_hist(prior_df, post_df, sel_pars, width=7, height=5
     plt.xlabel("Parameter range")
     plt.show()
 
-
-
-
 # scratches for QSWATMOD
-# read data first
-def read_stf_obd(wd, obd_file):
-    return pd.read_csv(
-        os.path.join(wd, obd_file),
-        index_col=0,
-        header=0,
-        parse_dates=True,
-        na_values=[-999, ""]
-    )
-
-def read_output_rch_data(wd, colNum=6):
-    return pd.read_csv(
-        os.path.join(wd, "output.rch"),
-        sep=r'\s+',
-        skiprows=9,
-        usecols=[1, 3, colNum],
-        names=["date", "filter", "stf_sim"],
-        index_col=0
-    )
-
-def update_index(df, startDate, ts):
-    if ts.lower() == "day":
-        df.index = pd.date_range(startDate, periods=len(df.stf_sim))
-    elif ts.lower() == "month":
-        df = df[df['filter'] < 13]
-        df.index = pd.date_range(startDate, periods=len(df.stf_sim), freq="M")
-    else:
-        df.index = pd.date_range(startDate, periods=len(df.stf_sim), freq="A")
-    return df
-
-def plot_simulated(ax, wd, subnum, startDate, ts):
-    output_rch = read_output_rch_data(wd)
-    df = output_rch.loc[subnum]
-    try:
-        df = update_index(df, startDate, ts)
-        ax.plot(df.index.values, df.stf_sim.values, c='g', lw=1, label="Simulated")
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
-    except Exception as e:
-        handle_exception(ax, str(e))
+# data comes from hanlder module and SWATMFout class
 
 def plot_observed_data(ax, df3, obd_col):
     size = 10
-    ax.scatter(
-        df3.index.values, df3[obd_col].values, c='m', lw=1, alpha=0.5, s=size, marker='x',
+    ax.plot(
+        df3.index.values, df3[obd_col].values, c='m', lw=1.5, alpha=0.5,
         label="Observed", zorder=3
     )
+    # ax.scatter(
+    #     df3.index.values, df3[obd_col].values, c='m', lw=1, alpha=0.5, s=size, marker='x',
+    #     label="Observed", zorder=3
+    # )
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
     if len(df3[obd_col]) > 1:
         calculate_metrics(ax, df3, obd_col)
     else:
         display_no_data_message(ax)
 
-def plot_stf_obd(ax, wd, obd_file, startDate, subnum, ts, obd_col):
-    strObd = read_stf_obd(wd, obd_file)
-    output_rch = read_output_rch_data(wd)
-    # try:
-    df = output_rch.loc[subnum]
-    df = update_index(df, startDate, ts)
-    ax.plot(df.index.values, df.stf_sim.values, c='limegreen', lw=1, label="Simulated")
-    df2 = pd.concat([df, strObd[obd_col]], axis=1)
-    df3 = df2.dropna().resample('M').mean()
-    plot_observed_data(ax, df3, obd_col)
+def plot_stf_sim_obd(ax, stf_obd_df, obd_col):
+    ax.plot(stf_obd_df.index.values, stf_obd_df.stf_sim.values, c='limegreen', lw=1, label="Simulated")
+    plot_observed_data(ax, stf_obd_df, obd_col)
     # except Exception as e:
     #     handle_exception(ax, str(e))
+
+def plot_stf_sim(ax, stf_df):
+    try:
+        ax.plot(stf_df.index.values, stf_df.stf_sim.values, c='limegreen', lw=1, label="Simulated")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
+    except Exception as e:
+        handle_exception(ax, str(e)) 
+
+
+# gw
+def plot_gw_sim(ax, df, grid_id):
+    ax.plot(df.index.values, df[str(grid_id)].values, c='skyblue', lw=1, label="Simulated")
+
+
+def plot_gw_sim_obd(ax, sim_df, grid_id, obd_df, obd_col):
+    df =  pd.concat([sim_df.loc[:, str(grid_id)], obd_df.loc[:, obd_col]], axis=1).dropna()
+    ax.plot(df.index.values, df[str(grid_id)].values, c='skyblue', lw=1, label="Simulated")
+    ax.plot(
+        df.index.values, df[obd_col].values, c='m', lw=1.5, alpha=0.5,
+        label="Observed", zorder=3
+    )
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
+    if len(df[obd_col]) > 1:
+        calculate_metrics_gw(ax, df, grid_id, obd_col)
+    else:
+        display_no_data_message(ax)  
 
 
 # NOTE: metrics =======================================================================================
@@ -924,17 +921,28 @@ def calculate_metrics(ax, df3, obd_col):
     PBIAS = 100 * (sum(df3[obd_col] - df3.stf_sim) / sum(df3[obd_col]))
     display_metrics(ax, dNS, r_squared, PBIAS)
 
+def calculate_metrics_gw(ax, df3, grid_id, obd_col):
+    r_squared = (
+            ((sum((df3.loc[:, obd_col] - df3.loc[:, obd_col].mean()) * 
+            (df3.loc[:, grid_id]  - df3.loc[:, grid_id].mean())))**2) / 
+            ((sum((df3.loc[:, obd_col] - df3.loc[:, obd_col].mean())**2) * 
+            (sum((df3.loc[:, grid_id]  - df3.loc[:, grid_id].mean())**2)))
+            ))
+    dNS = 1 - (sum((df3.loc[:, grid_id]  - df3.loc[:, obd_col] )**2) / sum((df3.loc[:, obd_col] - (df3.loc[:, obd_col]).mean())**2))
+    PBIAS = 100 * (sum(df3.loc[:, obd_col] - df3.loc[:, grid_id] ) / sum(df3.loc[:, obd_col] ))
+    display_metrics(ax, dNS, r_squared, PBIAS)
+
 def display_metrics(ax, dNS, r_squared, PBIAS):
     ax.text(
-        .01, 0.95, f'Nash-Sutcliffe: {dNS:.4f}',
+        .01, 0.90, f'Nash-Sutcliffe: {dNS:.4f}',
         fontsize=8, horizontalalignment='left', color='limegreen', transform=ax.transAxes
     )
     ax.text(
-        .01, 0.90, f'$R^2$: {r_squared:.4f}',
+        .01, 0.80, f'$R^2$: {r_squared:.4f}',
         fontsize=8, horizontalalignment='left', color='limegreen', transform=ax.transAxes
     )
     ax.text(
-        .99, 0.95, f'PBIAS: {PBIAS:.4f}',
+        .99, 0.90, f'PBIAS: {PBIAS:.4f}',
         fontsize=8, horizontalalignment='right', color='limegreen', transform=ax.transAxes
     )
 
@@ -958,36 +966,449 @@ def handle_exception(ax, exception_message):
         fontsize=12, horizontalalignment='center', weight='extra bold', color='y', transform=ax.transAxes
     )
 
+def format_axes(fig):
+    for i, ax in enumerate(fig.axes):
+        ax.text(0.5, 0.5, "ax%d" % (i+1), va="center", ha="center")
+        ax.tick_params(labelbottom=False, labelleft=False)
 
-def plot_(wd, subnum, startDate, ts, obd_file, obd_col):
-    fig, ax = plt.subplots(figsize=(9, 4))
-    ax.set_ylabel(r'Stream Discharge $[m^3/s]$', fontsize=8)
-    ax.tick_params(axis='both', labelsize=8)
-    plot_simulated(ax, wd, subnum, startDate, ts)
-    plot_stf_obd(ax, wd, obd_file, startDate, subnum, ts, obd_col)
+
+# std plot
+def std_plot(axes, dff, viz_ts, widthExg=1, cutcolor='k'):
+    # fig, axes = plt.subplots(
+    #     nrows=4, figsize=(14, 7), sharex=True,
+    #     gridspec_kw={
+    #                 'height_ratios': [0.2, 0.2, 0.4, 0.2],
+    #                 'hspace': 0.1
+    #                 })
+    # plt.subplots_adjust(left=0.06, right=0.98, top=0.83, bottom=0.05)
+    width = -20
+    dff = dff.resample("M").mean()
+    # == Precipitation ============================================================
+    axes[0].bar(
+        dff.index, dff.prec, width * widthExg,
+        # edgecolor = 'w',
+        align='edge',
+        # linewidth = 0.1,
+        color='slateblue')
+    axes[0].set_ylim((dff.prec.max() + dff.prec.max() * 0.1), 0)
+    axes[0].xaxis.tick_top()
+    axes[0].spines['bottom'].set_visible(False)
+    axes[0].tick_params(axis='both', labelsize=8)
+
+    # if viz_ts == "MA":
+    #     axes[0].set_title('Water Balance - Monthly Average [mm]', fontsize=12, fontweight='semibold')
+    #     dff = dff.resample("M").mean()
+    # elif viz_ts == "AA":
+    #     axes[0].set_title('Water Balance - Annual Average [mm]', fontsize=12, fontweight='semibold')
+    # ttl = axes[0].title
+    # ttl.set_position([0.5, 1.8])
+    # == Soil Water ===============================================================
+    axes[1].spines['top'].set_visible(False)
+    axes[1].spines['bottom'].set_visible(False)
+    axes[1].get_xaxis().set_visible(False)
+    axes[1].bar(
+        dff.index, dff.sw, width * widthExg,
+        bottom=dff.gwq + dff.latq + dff.surq,
+        # edgecolor = 'w',
+        align='edge',
+        # linewidth = 0.3,
+        color='lightgreen')
+    axes[1].set_ylim(
+        (dff.gwq + dff.latq + dff.surq).max(),
+        (dff.gwq + dff.latq + dff.surq + dff.sw).max()
+        )
+    axes[1].tick_params(axis='both', labelsize=8)
+    # == Interaction ============================================================
+    axes[2].spines['top'].set_visible(False)
+    axes[2].spines['bottom'].set_visible(False)
+    axes[2].get_xaxis().set_visible(False)
+    # gwq -> Groundwater discharge to stream
+    axes[2].bar(
+        dff.index, dff.gwq, width * widthExg,
+        # edgecolor = 'w',
+        align='edge',
+        # linewidth = 0.3,
+        color='darkgreen')
+    # latq -> lateral flow to stream
+    axes[2].bar(
+        dff.index, dff.latq, width * widthExg,
+        bottom=dff.gwq,
+        # edgecolor='w',
+        align='edge',
+        # linewidth=0.3,
+        color='forestgreen')
+    # surq -> surface runoff to stream
+    axes[2].bar(
+        dff.index, dff.surq, width * widthExg,
+        bottom=dff.latq + dff.gwq,
+        # edgecolor='w',
+        align='edge',
+        # linewidth=0.3,
+        color='limegreen')
+    # Soil water
+    axes[2].bar(
+        dff.index, dff.sw, width * widthExg,
+        bottom=dff.gwq + dff.latq + dff.surq,
+        # edgecolor='w',
+        align='edge',
+        # linewidth=0.3,
+        color='lightgreen')
+    axes[2].axhline(y=0, xmin=0, xmax=1, lw=0.3, ls='--', c='grey')
+    # swgw -> seepage to aquifer
+    axes[2].bar(
+        dff.index, dff.swgw*-1, width * widthExg,
+        # bottom = df.latq,
+        # edgecolor='w',
+        align='edge',
+        # linewidth=0.8,
+        color='b')
+    # perco -> recharge to aquifer
+    axes[2].bar(
+        dff.index, dff.perco*-1, width * widthExg,
+        bottom=dff.swgw*-1,
+        # edgecolor='w',
+        align='edge',
+        # linewidth=0.8,
+        color='dodgerblue')
+    # gw -> groundwater volume
+    axes[2].bar(
+        dff.index, dff.gw*-1, width * widthExg,
+        bottom=(dff.perco*-1) + (dff.swgw*-1),
+        # edgecolor='w',
+        color=['skyblue'],
+        align='edge',
+        # linewidth=0.8
+        )
+    axes[2].set_ylim(
+        -1*(dff.swgw + dff.perco).max(),
+        (dff.gwq + dff.latq + dff.surq).max())
+    axes[2].tick_params(axis='both', labelsize=8)
+    axes[2].set_yticklabels([float(abs(x)) for x in axes[2].get_yticks()])
+    # ===
+    axes[3].bar(
+        dff.index, dff.gw, width * widthExg,
+        bottom=(dff.perco) + (dff.swgw),
+        # edgecolor='w',
+        color=['skyblue'],
+        align='edge',
+        # linewidth=0.8
+        )
+    # axes[3].set_yticklabels([int(abs(x)) for x in axes[3].get_yticks()])
+    axes[3].set_ylim(
+        ((dff.gw + dff.perco + dff.swgw).max()),
+        ((dff.gw + dff.perco + dff.swgw).min())
+        )
+    axes[3].spines['top'].set_visible(False)
+    axes[3].tick_params(axis='both', labelsize=8)
+    # this is for a broken y-axis  ##################################
+    d = .003  # how big to make the diagonal lines in axes coordinates
+    # arguments to pass to plot, just so we don't keep repeating them
+    # if self.dlg.checkBox_darktheme.isChecked():
+    #     cutcolor = 'w'
+    # else:
+    #     cutcolor = 'k'
+    cutcolor = 'k'
+    kwargs = dict(transform=axes[1].transAxes, color=cutcolor, clip_on=False)
+    axes[1].plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+    axes[1].plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+    kwargs.update(transform=axes[2].transAxes)  # switch to the bottom axes
+    axes[2].plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+    axes[2].plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+    axes[2].plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+    axes[2].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+    kwargs.update(transform=axes[3].transAxes)  # switch to the bottom axes
+    axes[3].plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+    axes[3].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+    # if self.dlg.checkBox_std_legend.isChecked():
+    names = (
+        'Precipitation', 'Soil Water', 'Surface Runoff', 'Lateral Flow',
+        'Groundwater Flow to Stream',
+        'Seepage from Stream to Aquifer',
+        'Deep Percolation to Aquifer',
+        'Groundwater Volume')
+    colors = (
+        'slateblue', 'lightgreen', 'limegreen', 'forestgreen', 'darkgreen',
+        'b',
+        'dodgerblue',
+        'skyblue')
+    ps = []
+    for c in colors:
+        ps.append(
+            Rectangle(
+                (0, 0), 0.1, 0.1, fc=c,
+                # ec = 'k',
+                alpha=1))
+    legend = axes[0].legend(
+        ps, names,
+        loc='upper left',
+        # title="EXPLANATION",
+        # ,handlelength = 3, handleheight = 1.5,
+        edgecolor='none',
+        fontsize=8,
+        bbox_to_anchor=(-0.02, 1.8),
+        # labelspacing = 1.5,
+        ncol=4)
+    legend._legend_box.align = "left"
+    # legend text centered
+    for t in legend.texts:
+        t.set_multialignment('left')
+    # plt.setp(legend.get_title(), fontweight='bold', fontsize=10)
+    # plt.show()
+
+
+# user custimized plot
+def temp_plot(stf_obd_df, obd_col, std_df, viz_ts, gw_df, grid_id, gw_obd_df, gw_obd_col):
+    fig = plt.figure(figsize=(10,10))
+    subplots = fig.subfigures(4, 1, height_ratios=[0.2, 0.2, 0.2, 0.4], hspace=-0.05)
+
+    ax0 = subplots[0].subplots(1,1)
+    ax1 = subplots[1].subplots(1,2, sharey=True, 
+                    gridspec_kw={
+                    # 'height_ratios': [0.2, 0.2, 0.4, 0.2],
+                    'wspace': 0.0
+                    })
+    ax2 = subplots[2].subplots(1,2, sharey=True, 
+                    gridspec_kw={
+                    # 'height_ratios': [0.2, 0.2, 0.4, 0.2],
+                    'wspace': 0.0
+                    })
+    ax3 = subplots[3].subplots(4,1, sharex=True, height_ratios=[0.2, 0.2, 0.4, 0.2])
+    # ax3 = subplots[1][1].subplots(2,5)
+
+    # streamflow
+    ax0.set_ylabel(r'Stream Discharge $[m^3/s]$', fontsize=8)
+    ax0.tick_params(axis='both', labelsize=8)
+    plot_stf_sim_obd(ax0, stf_obd_df, obd_col)
+    # '''
+    plot_gw_sim_obd(ax1[0], gw_df, "sim_g249lyr2", gw_obd_df, "g249lyr2")
+    plot_gw_sim_obd(ax1[1], gw_df, "sim_g249lyr3", gw_obd_df, "g249lyr3")
+    # plot_gw_sim_obd(ax2[0], gw_df, "sim_g1203lyr2", gw_obd_df, "g1203lyr2")
+    # plot_gw_sim_obd(ax2[1], gw_df, "sim_g1205lyr2", gw_obd_df, "g1205lyr2")
+    plot_gw_sim(ax2[0], gw_df, "sim_g1203lyr3")
+    plot_gw_sim(ax2[1], gw_df, "sim_g1205lyr3")
+    # '''
+    std_plot(ax3, std_df, viz_ts)
     plt.show()
+
+def plot_sen_morris(df):
+    df = df.loc[df.sen_mean_abs>1e-6,:]
+    # df.loc[:,["sen_mean_abs","sen_std_dev"]].plot(kind="bar", figsize=(9,3), fontsize=12)
+    #ax = plt.gca()
+    #ax.set_ylim(1,ax.get_ylim()[1]*1.1)
+    # plt.yscale('log');
+    fig,ax = plt.subplots(1,1,figsize=(6,5))
+    swat_df = df.loc[df["pargp"]=="swat"]
+    hk_df = df.loc[df["pargp"]=="hk"]
+    ss_df = df.loc[df["pargp"]=="ss"]
+    sy_df = df.loc[df["pargp"]=="sy"]
+    
+    ax.scatter(swat_df.sen_mean_abs,swat_df.sen_std_dev,marker="^",s=80,c="r", alpha=0.5, label="swat")
+    ax.scatter(hk_df.sen_mean_abs,hk_df.sen_std_dev,marker="s",s=80,c="b", alpha=0.5, label="hy")
+    ax.scatter(ss_df.sen_mean_abs,ss_df.sen_std_dev,marker="o",s=80,c="g", alpha=0.5, label="ss")
+    ax.scatter(sy_df.sen_mean_abs,sy_df.sen_std_dev,marker="x",s=80,c="k", alpha=0.5, label="sy")
+
+
+    # tmp_df = tmp_df.iloc[:8]
+    for x,y,n in zip(df.sen_mean_abs,df.sen_std_dev,df.index):
+        if x > 1000000:
+            ax.text(x,y,n, fontsize=12)
+    mx = max(ax.get_xlim()[1],ax.get_ylim()[1])
+    mn = min(ax.get_xlim()[0],ax.get_ylim()[0])
+    ax.plot([mn,mx],[mn,mx],"k--", alpha=0.3)
+    ax.set_ylim(mn,mx)
+    ax.set_xlim(mn,mx)
+    ax.grid()
+    ax.set_ylabel(r"$\sigma$", fontsize=12)
+    ax.set_xlabel(r"$\mu^*$", fontsize=12)
+    ax.tick_params(axis='both', labelsize=12)
+    plt.legend(fontsize=12, loc="lower right")
+    plt.tight_layout()  
+    plt.show()  
+
+# def ext_dtw():
+
+
+def get_pr_pt_df(pst, pr_oe, pt_oe, bestrel_idx=None):
+    obs = pst.observation_data.copy()
+    time_col = []
+    for i in range(len(obs)):
+        time_col.append(obs.iloc[i, 0][-8:])
+    obs['time'] = time_col
+    obs['time'] = pd.to_datetime(obs['time'])
+    # print(pt_oe.loc["4"])
+    if bestrel_idx is not None:
+        df = pd.DataFrame(
+            {'date':obs['time'],
+            'obd':obs["obsval"],
+            'pr_min': pr_oe.min(),
+            'pr_max': pr_oe.max(),
+            'pt_min': pt_oe.min(),
+            'pt_max': pt_oe.max(),
+            'best_rel': pt_oe.loc[str(bestrel_idx)],
+            'obgnme': obs['obgnme'],
+            }
+            )
+    else:
+        df = pd.DataFrame(
+            {'date':obs['time'],
+            'obd':obs["obsval"],
+            'pr_min': pr_oe.min(),
+            'pr_max': pr_oe.max(),
+            'pt_min': pt_oe.min(),
+            'pt_max': pt_oe.max(),
+            'obgnme': obs['obgnme'],
+            }
+            )
+    df.set_index('date', inplace=True)
+    return df
+
+
+def plot_fill_between_ensembles(
+        df, 
+        width=12, height=4,
+        caldates=None,
+        valdates=None,
+        size=None,
+        pcp_df=None,
+        bestrel_idx=None,
+        ):
+    """plot time series of prior/posterior predictive uncertainties
+
+    :param df: dataframe of prior/posterior created by get_pr_pt_df function
+    :type df: dataframe
+    :param width: plot width, defaults to 12
+    :type width: int, optional
+    :param height: plot height, defaults to 4
+    :type height: int, optional
+    :param caldates: calibration start and end dates, defaults to None
+    :type caldates: list, optional
+    :param valdates: validation start and end dates, defaults to None
+    :type valdates: list, optional
+    :param size: symbol size, defaults to None
+    :type size: int, optional
+    :param pcp_df: dataframe of precipitation, defaults to None
+    :type pcp_df: dataframe, optional
+    :param bestrel_idx: realization index, defaults to None
+    :type bestrel_idx: string, optional
+    """
+    if size is None:
+        size = 30
+    fig, ax = plt.subplots(figsize=(width,height))
+    # x_values = df.loc[:, "newtime"].values
+    x_values = df.index.values
+    if caldates is not None:
+        caldf = df[caldates[0]:caldates[1]]
+        valdf = df[valdates[0]:valdates[1]]
+        ax.fill_between(
+            df.index.values, df.loc[:, 'pr_min'].values, df.loc[:, 'pr_max'].values, 
+            facecolor="0.5", alpha=0.4, label="Prior")
+        ax.fill_between(
+            caldf.index.values, caldf.loc[:, 'pt_min'].values, caldf.loc[:, 'pt_max'].values, 
+            facecolor="g", alpha=0.4, label="Posterior")
+        ax.plot(caldf.index.values, caldf.loc[:, 'best_rel'].values, c='g', lw=1, label="calibrated")
+        ax.fill_between(
+            valdf.index.values, valdf.loc[:, 'pt_min'].values, valdf.loc[:, 'pt_max'].values, 
+            facecolor="m", alpha=0.4, label="Forecast")        
+        ax.scatter(
+            df.index.values, df.loc[:, 'obd'].values, 
+            color='red',s=size, zorder=10, label="Observed").set_facecolor("none")
+        ax.plot(valdf.index.values, valdf.loc[:, 'best_rel'].values, c='m', lw=1, label="validated")
+    else:
+        ax.fill_between(
+            x_values, df.loc[:, 'pr_min'].values, df.loc[:, 'pr_max'].values, 
+            facecolor="0.5", alpha=0.4, label="Prior")
+        ax.fill_between(
+            x_values, df.loc[:, 'pt_min'].values, df.loc[:, 'pt_max'].values, 
+            facecolor="g", alpha=0.4, label="Posterior")
+        # ax.plot(x_values, df.loc[:, 'best_rel'].values, c='g', lw=1, label="calibrated")
+        ax.scatter(
+            x_values, df.loc[:, 'obd'].values, 
+            color='red',s=size, zorder=10, label="Observed").set_facecolor("none")
+    if pcp_df is not None:
+        # pcp_df.index.freq = None
+        ax2=ax.twinx()
+        ax2.bar(
+            pcp_df.index, pcp_df.loc[:, "pcpmm"].values, label='Precipitation',
+            width=20 ,
+            color="blue", 
+            align='center', 
+            alpha=0.5
+            )
+        ax2.set_ylabel("Precipitation $(mm/month)$",fontsize=12)
+        ax2.invert_yaxis()
+        ax2.set_ylim(pcp_df.loc[:, "pcpmm"].max()*3, 0)
+        # ax.set_ylabel("Stream Discharge $(m^3/day)$",fontsize=14)
+        ax2.tick_params(axis='y', labelsize=12)
+    # ax.axvline(datetime.datetime(2016,12,31), linestyle="--", color='k', alpha=0.3)
+    # ax.set_xlabel(r"Exceedence [%]", fontsize=12)
+    # ax.set_ylabel(r"Monthly irrigation $(mm/month)$", fontsize=12)
+    ax.set_ylabel(r"Daily streamflow $(m^3/s)$", fontsize=12)
+    ax.margins(0.01)
+    ax.tick_params(axis='both', labelsize=12)
+    # ax.set_ylim(0, df.max().max()*1.5)
+    # ax.set_ylim(0, 800)
+    # ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    # ask matplotlib for the plotted objects and their labels
+    lines, labels = ax.get_legend_handles_labels()
+    # lines2, labels2 = ax2.get_legend_handles_labels()
+    order = [0,1,2,3]
+    # plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+    # fig.legend(
+    #     [tlines[idx] for idx in order],[tlables[idx] for idx in order],
+    #     fontsize=10,
+    #     loc = 'lower center',
+    #     bbox_to_anchor=(0.5, -0.08),
+    #     ncols=7)
+
+    tlables = labels
+    tlines = lines
+ 
+
+    fig.legend(fontsize=12, loc="lower left")
+    years = mdates.YearLocator()
+    # print(years)
+    yearsFmt = mdates.DateFormatter('%Y')  # add some space for the year label
+    months = mdates.MonthLocator()
+    monthsFmt = mdates.DateFormatter('%b') 
+    ax.xaxis.set_minor_locator(months)
+    ax.xaxis.set_minor_formatter(monthsFmt)
+    plt.setp(ax.xaxis.get_minorticklabels(), fontsize = 8, rotation=90)
+    ax.xaxis.set_major_locator(years)
+    ax.xaxis.set_major_formatter(yearsFmt)
+    # ax.set_xticklabels(["May", "Jun", "Jul", "Aug", "Sep"]*7)
+    ax.tick_params(axis='both', labelsize=8, rotation=0)
+    ax.tick_params(axis = 'x', pad=20)
+
+    plt.tight_layout()
+    plt.savefig('cal_val.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
+
+def koki_temp():
+    wd = "d:\\Projects\\Watersheds\\Koksilah\\analysis\\koksilah_git\\koki_zon_rw_ies"
+    os.chdir(wd)
+    pst_file = "koki_zon_rw_ies.pst"
+    post_iter_num = 3
+    pst = pyemu.Pst(pst_file) # load control file
+    # load prior simulation
+    pr_oe = pyemu.ObservationEnsemble.from_csv(
+        pst=pst,filename=f'{pst_file[:-4]}.0.obs.csv'
+        )
+    # load posterior simulation
+    pt_oe = pyemu.ObservationEnsemble.from_csv(
+        pst=pst,filename=f'{pst_file[:-4]}.{post_iter_num}.obs.csv'
+        )
+    df = get_pr_pt_df(pst, pr_oe, pt_oe)
+    # '''
+    plot_fill_between_ensembles(df.loc[df["obgnme"]=="sub03"], size=3)
+    # '''
+    # print(df)
+    plot_tseries_ensembles(pst, pr_oe, pt_oe)
 
 # def plot_tot():
 if __name__ == '__main__':
     # wd = "/Users/seonggyu.park/Documents/projects/kokshila/swatmf_results"
-    wd = "D:\\Projects\\Watersheds\\Koksilah\\analysis\\koksilah_swatmf\\SWAT-MODFLOW"
-    obd_file = "stf_day.obd.csv"
 
-    m1 = SWATMFout(wd)
-    print(m1.get_stf_sim_obd(obd_file))
-    # print(m1)
-
-
-    # stfs = {3: "sub03"}
-    # dtws = {431: "g_431", 4011: "g_431"}
-    # subnum = 3
-
-    # obd_col = "sub03"
-
-    # startDate = '1/1/2013'
-    # ts ="day"
-    # keysList = list(dtws.values())
-    # # print(keysList)
-    # plot_(wd, subnum, startDate, ts, obd_file, obd_col)
+    koki_temp()
 
 

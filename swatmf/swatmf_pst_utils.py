@@ -23,7 +23,6 @@ opt_files_path = os.path.join(
 foward_path = os.path.dirname(os.path.abspath( __file__ ))
 
 
-
 def create_swatmf_con(
                 prj_dir, 
                 swatmf_model, sim_start, warmup, cal_start, cal_end,
@@ -31,6 +30,9 @@ def create_swatmf_con(
                 baseflow=None,
                 time_step=None,
                 pp_included=None,
+                grids_lyrs=None,
+                avg_grids=None
+
                 # depth_to_water=None, 
                 ):
     """create swatmf.con file containg SWAT-MODFLOW model PEST initial settings
@@ -70,8 +72,11 @@ def create_swatmf_con(
         pp_included = 'n'
     # if depth_to_water is None:
     #     depth_to_water = 'n'
+    if grids_lyrs is None:
+        grids_lyrs = 'n'
 
-
+    if avg_grids is None:
+        avg_grids = 'n'
     col01 = [
         'prj_dir',
         'swatmf_model', 'sim_start', 'warm-up', 'cal_start', 'cal_end',
@@ -79,6 +84,8 @@ def create_swatmf_con(
         'riv_parm', 'baseflow',
         'time_step',
         'pp_included',
+        'grids_lyrs',
+        'avg_grids'
         ]
     col02 = [
         prj_dir,
@@ -87,6 +94,8 @@ def create_swatmf_con(
         riv_parm, baseflow,
         time_step,
         pp_included,
+        grids_lyrs,
+        avg_grids
         ]
     df = pd.DataFrame({'names': col01, 'vals': col02})
 
@@ -112,6 +121,7 @@ def init_setup(prj_dir, swatmfwd, swatwd):
         "model.in",
         "SUFI2_LH_sample.exe",
         "Swat_Edit.exe",
+        "swatmf_rel230922.exe"
         ]
     suffix = ' passed'
     print(" Creating 'main_opt' folder in working directory ...",  end='\r', flush=True)
@@ -179,7 +189,7 @@ def extract_day_stf(channels, start_day, warmup, cali_start_day, cali_end_day):
     for i in channels:
         sim_stf = pd.read_csv(
                         rch_file,
-                        delim_whitespace=True,
+                        sep=r'\s+',
                         skiprows=9,
                         usecols=[1, 3, 6],
                         names=["date", "filter", "stf_sim"],
@@ -328,6 +338,32 @@ def extract_depth_to_water(grid_ids, start_day, end_day, time_step="day"):
                         )
         print('dtw_{}.txt file has been created...'.format(i))
     print('Finished ...')
+
+
+def extract_depth_to_water_layer(dtw_df, start_day, end_day, time_step="day"):
+    """create depth to water extracted file with layer info
+
+    :param dtw_df: depth to water dataframe created by handler.get_gw_sim function
+    :type dtw_df: dataframe
+    :param start_day: sim startdate
+    :type start_day: str
+    :param end_day: sim enddate
+    :type end_day: str
+    :param time_step: time step, defaults to "day"
+    :type time_step: str, optional
+    """
+    if time_step == "day":
+        mf_sim = dtw_df[start_day:end_day]
+    if time_step == "month":
+        mf_sim = dtw_df[start_day:end_day].resample('M').mean()
+    for col in mf_sim.columns:
+        mf_sim.loc[:, col].to_csv(
+                        '{}.txt'.format(col), sep='\t', encoding='utf-8',
+                        index=True, header=False, float_format='%.7e'
+                        )    
+        print('{}.txt file has been created...'.format(col))
+    print('Finished ...')
+
 
 def extract_avg_depth_to_water(
                 grid_ids, start_day, 
