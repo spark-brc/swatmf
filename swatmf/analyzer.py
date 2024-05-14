@@ -11,9 +11,8 @@ import matplotlib.dates as mdates
 from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Rectangle
 import matplotlib.gridspec as gridspec
-from swatmf import handler
+from swatmf import handler, objfns
 import pyemu
-
 
 
 def get_all_scenario_lists(wd):
@@ -113,44 +112,6 @@ def str_df(start_date, sub_number, time_step=None):
 
 
 
-def apex_str_df(rch_file, start_date, rch_num, obd_nam, time_step=None):
-    
-    if time_step is None:
-        time_step = "D"
-        strobd_file = "swat_rch_day.obd"
-    else:
-        time_step = "M"
-        strobd_file = "swat_rch_mon.obd."
-    output_rch = pd.read_csv(
-                        rch_file, sep=r'\s+', skiprows=9,
-                        usecols=[0, 1, 8], names=["idx", "sub", "simulated"], index_col=0
-                        )
-    df = output_rch.loc["REACH"]
-    str_obd = pd.read_csv(
-                        strobd_file, sep=r'\s+', index_col=0, header=0,
-                        parse_dates=True, delimiter="\t",
-                        na_values=[-999, ""]
-                        )
-    # Get precipitation data from *.DYL
-    prep_file = 'sub{}.DLY'.format(rch_num)
-    with open(prep_file) as f:
-        content = f.readlines()    
-    year = content[0][:6].strip()
-    mon = content[0][6:10].strip()
-    day = content[0][10:14].strip()
-    prep = [float(i[32:38].strip()) for i in content]
-    prep_stdate = "/".join((mon,day,year))
-    prep_df =  pd.DataFrame(prep, columns=['prep'])
-    prep_df.index = pd.date_range(prep_stdate, periods=len(prep))
-    prep_df = prep_df.replace(9999, np.nan)
-    if time_step == "M":
-        prep_df = prep_df.resample('M').mean()
-    df = df.loc[df['sub'] == int(rch_num)]
-    df = df.drop('sub', axis=1)
-    df.index = pd.date_range(start_date, periods=len(df), freq=time_step)
-    df = pd.concat([df, str_obd[obd_nam], prep_df], axis=1)
-    plot_df = df[df['simulated'].notna()]
-    return plot_df
 
 
 def str_sim_obd(plot_df): # NOTE: temp for report
@@ -489,6 +450,214 @@ def wt_df(start_date, grid_id, obd_nam, time_step=None, prep_sub=None):
     return output_wt        
 
 
+
+
+def get_rels_objs(wd, pst_file, iter_idx=None, opt_idx=None):
+    pst = pyemu.Pst(os.path.join(wd, pst_file))
+    if iter_idx is None:
+        iter_idx = pst.control_data.noptmax
+    if opt_idx is None:
+        opt_idx = -1
+    # load observation data
+    obs = pst.observation_data.copy()
+    pst_nam = pst_file[:-4]
+    # load posterior simulation
+    pt_oe = pyemu.ObservationEnsemble.from_csv(
+        pst=pst,filename=os.path.join(wd,"{0}.{1}.obs.csv".format(pst_nam, iter_idx)))
+
+    pt_ut = pt_oe.loc[opt_idx].T
+    opt_df = pd.DataFrame()
+    opt_df = pd.concat([pt_ut, obs], axis=1)
+    sims = opt_df.iloc[:, 0].tolist()
+    obds = opt_df.iloc[:, 2].tolist()
+    pbias = objfns.pbias(obds, sims)
+    ns = objfns.nashsutcliffe(obds, sims)
+    rsq = objfns.rsquared(obds, sims)
+    rmse = objfns.rmse(obds, sims)
+    mse = objfns.mse(obds, sims)
+    pcc = objfns.correlationcoefficient(obds, sims)
+    return ns, pbias, rsq, rmse, mse, pcc
+
+
+def get_rels_objs_new(df, obgnme=None):
+    if obgnme is not None:
+        df = df.loc[df["obgnme"]==obgnme]
+    sims = df.loc[:, "best_rel"].tolist()
+    obds = df.loc[:, "obd"].tolist()
+    pbias = objfns.pbias(obds, sims)
+    ns = objfns.nashsutcliffe(obds, sims)
+    rsq = objfns.rsquared(obds, sims)
+    rmse = objfns.rmse(obds, sims)
+    mse = objfns.mse(obds, sims)
+    pcc = objfns.correlationcoefficient(obds, sims)
+    return ns, pbias, rsq, rmse, mse, pcc
+
+
+
+
+
+def get_rels_cal_val_objs(wd, pst_file, iter_idx=None, opt_idx=None, calval=None):
+    pst = pyemu.Pst(os.path.join(wd, pst_file))
+    if iter_idx is None:
+        iter_idx = pst.control_data.noptmax
+    if opt_idx is None:
+        opt_idx = -1
+    # load observation data
+    obs = pst.observation_data.copy()
+    pst_nam = pst_file[:-4]
+    # load posterior simulation
+    pt_oe = pyemu.ObservationEnsemble.from_csv(
+        pst=pst,filename=os.path.join(wd,"{0}.{1}.obs.csv".format(pst_nam, iter_idx)))
+
+    pt_ut = pt_oe.loc[opt_idx].T
+    opt_df = pd.DataFrame()
+    opt_df = pd.concat([pt_ut, obs], axis=1)
+
+    if calval is None:
+        calval = "cal"
+    opt_df = opt_df.loc[opt_df["obgnme"]==calval]
+    sims = opt_df.iloc[:, 0].tolist()
+    obds = opt_df.iloc[:, 2].tolist()
+    pbias = objfns.pbias(obds, sims)
+    ns = objfns.nashsutcliffe(obds, sims)
+    rsq = objfns.rsquared(obds, sims)
+    rmse = objfns.rmse(obds, sims)
+    mse = objfns.mse(obds, sims)
+    return ns, pbias, rsq, rmse
+
+def get_p_factor(pst, pt_oe, perc_obd_nz=None, cal_val=False):
+    """calculate p-factor
+
+    :param pst: pst object
+    :type pst: class
+    :param pt_oe: posterior ensamble
+    :type pt_oe: dataframe
+    :param perc_obd_nz: percentage of observation noise, defaults to None
+    :type perc_obd_nz: real, optional
+    :param cal_val: option to separate calibration and validation, defaults to False
+    :type cal_val: bool, optional
+    :return: p-factor value
+    :rtype: real
+    """
+    obs = pst.observation_data.copy()
+    if perc_obd_nz is None:
+        perc_obd_nz=10
+    perc = perc_obd_nz*0.01
+    time_col = []
+    for i in range(len(obs)):
+        time_col.append(obs.iloc[i, 0][-8:])
+    obs['time'] = time_col
+    obs['time'] = pd.to_datetime(obs['time'])    
+    df = pd.DataFrame(
+        {'date':obs['time'],
+        'obd':obs["obsval"],
+        'weight':obs["weight"],
+        'obgnme':obs["obgnme"],
+        'pt_min': pt_oe.min(),
+        'pt_max': pt_oe.max(),
+        }
+        )
+    if cal_val is True:
+        pfactors = []
+        for i in ["cal", "val"]:
+            cvdf = df.loc[df["obgnme"]==i]
+            conditions = [
+                ((cvdf.obd+(cvdf.obd*perc)) > cvdf.pt_min) & 
+                ((cvdf.obd-(cvdf.obd*perc)) < cvdf.pt_max)
+                    ]
+            cvdf['pfactor'] = np.select(
+                conditions, [1], default=0
+                )
+            pfactor = cvdf.loc[:, 'pfactor'].value_counts()[1] / len(cvdf.loc[:, 'pfactor'])
+            pfactors.append(pfactor)
+        print(pfactors)
+        return pfactors
+    else:
+        conditions = [
+            ((df.obd+(df.obd*perc)) > df.pt_min) & 
+            ((df.obd-(df.obd*perc)) < df.pt_max)
+                ]
+        df['pfactor'] = np.select(
+            conditions, [1], default=0
+            )
+        pfactor = df.loc[:, 'pfactor'].value_counts()[1] / len(df.loc[:, 'pfactor'])
+        print(pfactor)
+        df.to_csv('testpfactor.csv')
+        return pfactor
+    
+
+def get_d_factor(pst, pt_oe, cal_val=False):
+    obs = pst.observation_data.copy()
+    time_col = []
+    for i in range(len(obs)):
+        time_col.append(obs.iloc[i, 0][-8:])
+    obs['time'] = time_col
+    obs['time'] = pd.to_datetime(obs['time'])    
+    df = pd.DataFrame(
+        {'date':obs['time'],
+        'obd':obs["obsval"],
+        'weight':obs["weight"],
+        'obgnme':obs["obgnme"],
+        'pt_min': pt_oe.min(),
+        'pt_max': pt_oe.max(),
+        }
+        )
+    if cal_val is True:
+        dfactors = []
+        for i in ["cal", "val"]:
+            cvdf = df.loc[df["obgnme"]==i]
+            std_obd = np.std(cvdf['obd'])
+            dist_pts = (cvdf['pt_max'] - cvdf['pt_min']).mean()
+            dfactor = dist_pts/std_obd
+            dfactors.append(dfactor)
+        print(dfactors)
+        return dfactors
+    else:
+        std_obd = np.std(df['obd'])
+        dist_pts = (df['pt_max'] - df['pt_min']).mean()
+        dfactor = dist_pts/std_obd
+        print(dfactor)
+        return dfactor
+
+
+def create_rels_objs(wd, pst_file, iter_idx):
+    pst = pyemu.Pst(os.path.join(wd, pst_file))
+    # load observation data
+    # obs = pst.observation_data.copy()
+    pst_nam = pst_file[:-4]
+    # load posterior simulation
+    pt_oe = pyemu.ObservationEnsemble.from_csv(
+        pst=pst,filename=os.path.join(wd,"{0}.{1}.obs.csv".format(pst_nam, iter_idx)))
+    pt_par = pyemu.ParameterEnsemble.from_csv(
+        pst=pst,filename=os.path.join(wd,"{0}.{1}.par.csv".format(pst_nam, iter_idx)))
+    pt_oe_df = pd.DataFrame(pt_oe, index=pt_oe.index, columns=pt_oe.columns)
+    pt_par_df = pd.DataFrame(pt_par, index=pt_par.index, columns=pt_par.columns)
+    nss = []
+    pbiass = []
+    rsqs = []
+    rmses = []
+    mses = []
+    pccs = []
+    # for i in range(np.shape(pt_oe)[0]):
+    for i in pt_oe.index:
+        ns, pbias, rsq, rmse, mse, pcc = get_rels_objs(wd, pst_file, iter_idx=iter_idx, opt_idx=i)
+        nss.append(ns)
+        pbiass.append(pbias)
+        rsqs.append(rsq)
+        rmses.append(rmse)
+        mses.append(mse)
+        pccs.append(pcc)
+    objs_df = pd.DataFrame(
+        {
+            "ns": nss, "pbias": pbiass, "rsq": rsqs, "rmse": rmses,
+            "mse": mses, "pcc":pccs
+            },
+        index=pt_oe.index)
+    pt_oe_df = pd.concat([pt_oe_df, objs_df], axis=1)
+    pt_par_df = pd.concat([pt_par_df, objs_df], axis=1)
+    pt_oe_df.to_csv(os.path.join(wd, "{0}.{1}.obs.objs.csv".format(pst_nam, iter_idx)))
+    pt_par_df.to_csv(os.path.join(wd, "{0}.{1}.par.objs.csv".format(pst_nam, iter_idx)))
+
 def wt_plot(plot_df):
 
     colnams = plot_df.columns.tolist()
@@ -629,130 +798,6 @@ def y_fmt(y, pos):
     return y
 
 
-def read_output_mgt(wd):
-    with open(os.path.join(wd, 'output.mgt'), 'r') as f:
-        content = f.readlines()
-    subs = [int(i[:5]) for i in content[5:]]
-    hrus = [int(i[5:10]) for i in content[5:]]
-    yrs = [int(i[10:16]) for i in content[5:]]
-    mons = [int(i[16:22]) for i in content[5:]]
-    doys = [int(i[22:28]) for i in content[5:]]
-    areas = [float(i[28:39]) for i in content[5:]]
-    cfp = [str(i[39:55]).strip() for i in content[5:]]
-    opt = [str(i[55:70]).strip() for i in content[5:]]
-    irr = [-999 if i[150:160].strip() == '' else float(i[150:160]) for i in content[5:]]
-    mgt_df = pd.DataFrame(
-        np.column_stack([subs, hrus, yrs, mons, doys, areas, cfp, opt, irr]),
-        columns=['sub', 'hru', 'yr', 'mon', 'doy', 'area_km2', 'cfp', 'opt', 'irr_mm'])
-    mgt_df['irr_mm'] = mgt_df['irr_mm'].astype(float)
-    mgt_df['irr_mm'].replace(-999, np.nan, inplace=True)
-    return mgt_df
-
-def read_output_hru(wd):
-    with open(os.path.join(wd, 'output.hru'), 'r') as f:
-        content = f.readlines()
-    lulc = [(i[:4]) for i in content[9:]]
-    hrus = [str(i[10:19]) for i in content[9:]]
-    subs = [int(i[19:24]) for i in content[9:]]
-    mons = [(i[29:34]) for i in content[9:]]
-    areas = [float(i[34:44]) for i in content[9:]]
-    irr = [float(i[74:84]) for i in content[9:]]
-
-    hru_df = pd.DataFrame(
-        np.column_stack([lulc, hrus, subs, mons, areas, irr]),
-        columns=['lulc', 'hru', 'sub', 'mon', 'area_km2', 'irr_mm'])
-
-    conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
-    hru_df = hru_df.astype(conv_types)
-    hru_df = hru_df.loc[hru_df['mon'] < 13]
-    hru_df['mon'] = hru_df['mon'].astype(int)
-    hru_df['irr_m3'] = (hru_df['area_km2']*1000000) * (hru_df['irr_mm']*0.001)
-
-    return hru_df
-
-def read_output_sub(wd):
-    with open(os.path.join(wd, 'output.sub'), 'r') as f:
-        content = f.readlines()
-    subs = [int(i[6:10]) for i in content[9:]]
-    mons = [float(i[19:24]) for i in content[9:]]
-    preps = [float(i[34:44]) for i in content[9:]]
-    # pets = [float(i[54:64]) for i in content[9:]]
-    ets = [float(i[64:74]) for i in content[9:]]
-    sws = [float(i[74:84]) for i in content[9:]]
-    percs = [float(i[84:94]) for i in content[9:]]
-    surqs = [float(i[94:104]) for i in content[9:]]
-    gwqs = [float(i[104:114]) for i in content[9:]]
-    seds = [float(i[124:134]) for i in content[9:]]
-    latq = [float(i[184:194]) for i in content[9:]] 
-    sub_df = pd.DataFrame(
-        np.column_stack([subs, mons, preps, sws, latq, surqs, ets, percs, gwqs, seds]),
-        columns=["subs","mons", "precip", "sw", "latq", "surq", "et", "perco", "gwq", "sed"])
-
-    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
-    # hru_df = hru_df.astype(conv_types)
-    sub_df = sub_df.loc[sub_df['mons'] < 13]
-    sub_df['mons'] = sub_df['mons'].astype(int)
-    sub_df['subs'] = sub_df['subs'].astype(int)
-    return sub_df
-
-
-def read_output_sed(wd):
-    with open(os.path.join(wd, 'output.sed'), 'r') as f:
-        content = f.readlines()
-    subs = [int(i[5:10]) for i in content[1:]]
-    mons = [float(i[19:25]) for i in content[1:]]
-    seds = [float(i[49:61]) for i in content[1:]]
-
-    sed_df = pd.DataFrame(
-        np.column_stack([subs, mons, seds]),
-        columns=["subs","mons", "sed"])
-
-    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
-    # hru_df = hru_df.astype(conv_types)
-    sed_df = sed_df.loc[sed_df['mons'] < 13]
-    # sed_df['mons'] = sed_df['mons'].astype(int)
-    sed_df['subs'] = sed_df['subs'].astype(int)
-    return sed_df
-
-
-def read_output_rsv(wd):
-    with open(os.path.join(wd, 'output.rsv'), 'r') as f:
-        content = f.readlines()
-    subs = [int(i[5:14]) for i in content[9:]]
-    mons = [float(i[14:19]) for i in content[9:]]
-    flow = [float(i[43:55]) for i in content[9:]]
-    seds = [float(i[103:115]) for i in content[9:]]
-
-    sed_df = pd.DataFrame(
-        np.column_stack([subs, mons, flow, seds]),
-        columns=["subs","mons", "flow", "sed"])
-
-    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
-    # hru_df = hru_df.astype(conv_types)
-    sed_df = sed_df.loc[sed_df['mons'] < 13]
-    # sed_df['mons'] = sed_df['mons'].astype(int)
-    sed_df['subs'] = sed_df['subs'].astype(int)
-    return sed_df
-
-
-def read_output_rch(wd):
-    with open(os.path.join(wd, 'output.rch'), 'r') as f:
-        content = f.readlines()
-    subs = [int(i[5:10]) for i in content[9:]]
-    mons = [float(i[19:25]) for i in content[9:]]
-    flow = [float(i[49:61]) for i in content[9:]]
-    seds = [float(i[97:109]) for i in content[9:]]
-
-    sed_df = pd.DataFrame(
-        np.column_stack([subs, mons, flow, seds]),
-        columns=["subs","mons", "flow", "sed"])
-
-    # conv_types = {'hru':str, 'sub':int, 'mon':float, 'area_km2':float, 'irr_mm':float}
-    # hru_df = hru_df.astype(conv_types)
-    sed_df = sed_df.loc[sed_df['mons'] < 13]
-    # sed_df['mons'] = sed_df['mons'].astype(int)
-    sed_df['subs'] = sed_df['subs'].astype(int)
-    return sed_df
 
 
 def phi_progress_plot(filename):
@@ -831,8 +876,9 @@ def get_par_offset(pst):
     return pars
 
 def plot_prior_posterior_par_hist(
-                    pst, prior_df, post_df, sel_pars,
-                    width=7, height=5, ncols=3):
+        wd,
+        pst, prior_df, post_df, sel_pars, 
+        width=7, height=5, ncols=3, bestcand=None, parobj_file=None):
     nrows = math.ceil(len(sel_pars)/ncols)
     pars_info = get_par_offset(pst)
     fig, axes = plt.subplots(figsize=(width, height), nrows=nrows, ncols=ncols)
@@ -842,23 +888,38 @@ def plot_prior_posterior_par_hist(
         if i<len(sel_pars):
             colnam = sel_pars['parnme'].tolist()[i]
             offset = pars_info.loc[colnam, "offset"]
+            
             ax.hist(prior_df.loc[:, colnam].values + offset,
                     bins=np.linspace(
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0] + offset, 
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0] + offset , 20),
-                    color = "gray", alpha=0.5, density=True,
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0]+ offset, 
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0]+ offset, 20),
+                    color = "gray", alpha=0.5, density=False,
                     label="Prior"
             )
             y, x, _ = ax.hist(post_df.loc[:, colnam].values + offset,
                     bins=np.linspace(
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0] + offset, 
-                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0] + offset, 20), 
-                     alpha=0.5, density=True, label="Posterior"
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parlbnd'].values[0]+ offset, 
+                        sel_pars.loc[sel_pars["parnme"]==colnam, 'parubnd'].values[0]+ offset, 20), 
+                        alpha=0.5, density=False, label="Posterior"
             )
-            ax.set_ylabel(colnam)
-            ax.set_yticks([])
-    plt.xlabel("Parameter range")
+            ax.set_title(colnam, fontsize=9, ha='left', x=0.07, y=0.93, backgroundcolor='white')
+            # ax.set_yticks([])
+            if parobj_file is not None:
+                po_df = pd.read_csv(os.path.join(wd, parobj_file))
+                x = po_df.loc[po_df["real_name"]==bestcand, colnam].values + offset
+                ax.axvline(x=x, color='r', linestyle="--", alpha=0.5)
+        else:
+            ax.axis('off')
+            ax.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+        # ax.set_xticks(ax.get_xticks()[::1])
+        
+        ax.tick_params(axis='x', labelsize=8)       
+    plt.ylabel(r"Frequency", fontsize=10)
+    plt.xlabel(r"Parameter relative change (%)", fontsize=10)
+    plt.tight_layout()
+    plt.savefig('par_hist.png', bbox_inches='tight', dpi=300)
     plt.show()
+    print(os.getcwd())
 
 # scratches for QSWATMOD
 # data comes from hanlder module and SWATMFout class
@@ -905,7 +966,7 @@ def plot_gw_sim_obd(ax, sim_df, grid_id, obd_df, obd_col):
         df.index.values, df[obd_col].values, c='m', lw=1.5, alpha=0.5,
         label="Observed", zorder=3
     )
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
     if len(df[obd_col]) > 1:
         calculate_metrics_gw(ax, df, grid_id, obd_col)
     else:
@@ -1156,40 +1217,6 @@ def std_plot(axes, dff, viz_ts, widthExg=1, cutcolor='k'):
     # plt.show()
 
 
-# user custimized plot
-def temp_plot(stf_obd_df, obd_col, std_df, viz_ts, gw_df, grid_id, gw_obd_df, gw_obd_col):
-    fig = plt.figure(figsize=(10,10))
-    subplots = fig.subfigures(4, 1, height_ratios=[0.2, 0.2, 0.2, 0.4], hspace=-0.05)
-
-    ax0 = subplots[0].subplots(1,1)
-    ax1 = subplots[1].subplots(1,2, sharey=True, 
-                    gridspec_kw={
-                    # 'height_ratios': [0.2, 0.2, 0.4, 0.2],
-                    'wspace': 0.0
-                    })
-    ax2 = subplots[2].subplots(1,2, sharey=True, 
-                    gridspec_kw={
-                    # 'height_ratios': [0.2, 0.2, 0.4, 0.2],
-                    'wspace': 0.0
-                    })
-    ax3 = subplots[3].subplots(4,1, sharex=True, height_ratios=[0.2, 0.2, 0.4, 0.2])
-    # ax3 = subplots[1][1].subplots(2,5)
-
-    # streamflow
-    ax0.set_ylabel(r'Stream Discharge $[m^3/s]$', fontsize=8)
-    ax0.tick_params(axis='both', labelsize=8)
-    plot_stf_sim_obd(ax0, stf_obd_df, obd_col)
-    # '''
-    plot_gw_sim_obd(ax1[0], gw_df, "sim_g249lyr2", gw_obd_df, "g249lyr2")
-    plot_gw_sim_obd(ax1[1], gw_df, "sim_g249lyr3", gw_obd_df, "g249lyr3")
-    # plot_gw_sim_obd(ax2[0], gw_df, "sim_g1203lyr2", gw_obd_df, "g1203lyr2")
-    # plot_gw_sim_obd(ax2[1], gw_df, "sim_g1205lyr2", gw_obd_df, "g1205lyr2")
-    plot_gw_sim(ax2[0], gw_df, "sim_g1203lyr3")
-    plot_gw_sim(ax2[1], gw_df, "sim_g1205lyr3")
-    # '''
-    std_plot(ax3, std_df, viz_ts)
-    plt.show()
-
 def plot_sen_morris(df):
     df = df.loc[df.sen_mean_abs>1e-6,:]
     # df.loc[:,["sen_mean_abs","sen_std_dev"]].plot(kind="bar", figsize=(9,3), fontsize=12)
@@ -1207,7 +1234,6 @@ def plot_sen_morris(df):
     ax.scatter(ss_df.sen_mean_abs,ss_df.sen_std_dev,marker="o",s=80,c="g", alpha=0.5, label="ss")
     ax.scatter(sy_df.sen_mean_abs,sy_df.sen_std_dev,marker="x",s=80,c="k", alpha=0.5, label="sy")
 
-
     # tmp_df = tmp_df.iloc[:8]
     for x,y,n in zip(df.sen_mean_abs,df.sen_std_dev,df.index):
         if x > 1000000:
@@ -1224,9 +1250,6 @@ def plot_sen_morris(df):
     plt.legend(fontsize=12, loc="lower right")
     plt.tight_layout()  
     plt.show()  
-
-# def ext_dtw():
-
 
 def get_pr_pt_df(pst, pr_oe, pt_oe, bestrel_idx=None):
     obs = pst.observation_data.copy()
@@ -1270,7 +1293,7 @@ def plot_fill_between_ensembles(
         valdates=None,
         size=None,
         pcp_df=None,
-        bestrel_idx=None,
+        bestrel_idx="best_rel",
         ):
     """plot time series of prior/posterior predictive uncertainties
 
@@ -1305,14 +1328,16 @@ def plot_fill_between_ensembles(
         ax.fill_between(
             caldf.index.values, caldf.loc[:, 'pt_min'].values, caldf.loc[:, 'pt_max'].values, 
             facecolor="g", alpha=0.4, label="Posterior")
-        ax.plot(caldf.index.values, caldf.loc[:, 'best_rel'].values, c='g', lw=1, label="calibrated")
+        if bestrel_idx is not None:
+            ax.plot(caldf.index.values, caldf.loc[:, bestrel_idx].values, c='g', lw=1, label="calibrated")
         ax.fill_between(
             valdf.index.values, valdf.loc[:, 'pt_min'].values, valdf.loc[:, 'pt_max'].values, 
             facecolor="m", alpha=0.4, label="Forecast")        
         ax.scatter(
             df.index.values, df.loc[:, 'obd'].values, 
             color='red',s=size, zorder=10, label="Observed").set_facecolor("none")
-        ax.plot(valdf.index.values, valdf.loc[:, 'best_rel'].values, c='m', lw=1, label="validated")
+        if bestrel_idx is not None:
+            ax.plot(valdf.index.values, valdf.loc[:, bestrel_idx].values, c='m', lw=1, label="validated")
     else:
         ax.fill_between(
             x_values, df.loc[:, 'pr_min'].values, df.loc[:, 'pr_max'].values, 
@@ -1320,10 +1345,13 @@ def plot_fill_between_ensembles(
         ax.fill_between(
             x_values, df.loc[:, 'pt_min'].values, df.loc[:, 'pt_max'].values, 
             facecolor="g", alpha=0.4, label="Posterior")
-        # ax.plot(x_values, df.loc[:, 'best_rel'].values, c='g', lw=1, label="calibrated")
+        if bestrel_idx is not None:
+            ax.plot(
+                x_values, df.loc[:, bestrel_idx].values, 
+                c='b', lw=1, label="calibrated", zorder=3)
         ax.scatter(
             x_values, df.loc[:, 'obd'].values, 
-            color='red',s=size, zorder=10, label="Observed").set_facecolor("none")
+            color='red',s=size, zorder=5, label="Observed", alpha=0.5).set_facecolor("none")
     if pcp_df is not None:
         # pcp_df.index.freq = None
         ax2=ax.twinx()
@@ -1339,9 +1367,6 @@ def plot_fill_between_ensembles(
         ax2.set_ylim(pcp_df.loc[:, "pcpmm"].max()*3, 0)
         # ax.set_ylabel("Stream Discharge $(m^3/day)$",fontsize=14)
         ax2.tick_params(axis='y', labelsize=12)
-    # ax.axvline(datetime.datetime(2016,12,31), linestyle="--", color='k', alpha=0.3)
-    # ax.set_xlabel(r"Exceedence [%]", fontsize=12)
-    # ax.set_ylabel(r"Monthly irrigation $(mm/month)$", fontsize=12)
     ax.set_ylabel(r"Daily streamflow $(m^3/s)$", fontsize=12)
     ax.margins(0.01)
     ax.tick_params(axis='both', labelsize=12)
@@ -1362,9 +1387,16 @@ def plot_fill_between_ensembles(
 
     tlables = labels
     tlines = lines
- 
 
-    fig.legend(fontsize=12, loc="lower left")
+    fig.legend(
+        [tlines[idx] for idx in order],[tlables[idx] for idx in order],
+        fontsize=10,
+        loc = 'lower center',
+        bbox_to_anchor=(0.5, -0.08),
+        ncols=7)
+
+
+    # fig.legend(fontsize=12, loc="lower left")
     years = mdates.YearLocator()
     # print(years)
     yearsFmt = mdates.DateFormatter('%Y')  # add some space for the year label
@@ -1384,31 +1416,160 @@ def plot_fill_between_ensembles(
     plt.show()
 
 
-def koki_temp():
-    wd = "d:\\Projects\\Watersheds\\Koksilah\\analysis\\koksilah_git\\koki_zon_rw_ies"
-    os.chdir(wd)
-    pst_file = "koki_zon_rw_ies.pst"
-    post_iter_num = 3
-    pst = pyemu.Pst(pst_file) # load control file
-    # load prior simulation
-    pr_oe = pyemu.ObservationEnsemble.from_csv(
-        pst=pst,filename=f'{pst_file[:-4]}.0.obs.csv'
-        )
-    # load posterior simulation
-    pt_oe = pyemu.ObservationEnsemble.from_csv(
-        pst=pst,filename=f'{pst_file[:-4]}.{post_iter_num}.obs.csv'
-        )
-    df = get_pr_pt_df(pst, pr_oe, pt_oe)
-    # '''
-    plot_fill_between_ensembles(df.loc[df["obgnme"]=="sub03"], size=3)
-    # '''
-    # print(df)
-    plot_tseries_ensembles(pst, pr_oe, pt_oe)
+def single_plot_fdc_added(
+                    df,
+                    width=10, height=8, dot=True,
+                    size=None, bstc=False,
+                    orgsim=None
+                    ):
+    """plot flow exceedence
 
-# def plot_tot():
-if __name__ == '__main__':
-    # wd = "/Users/seonggyu.park/Documents/projects/kokshila/swatmf_results"
+    :param df: dataframe created by get_pr_pt_df function
+    :type df: dataframe
+    :param width: figure width, defaults to 10
+    :type width: int, optional
+    :param height: figure hight, defaults to 8
+    :type height: int, optional
+    :param dot: scatter or line, defaults to True
+    :type dot: bool, optional
+    :param size: maker size, defaults to None
+    :type size: int, optional
+    :param bstcs: best candiates, defaults to None
+    :type bstcs: list, optional
+    :param orgsim: _description_, defaults to None
+    :type orgsim: _type_, optional
+    """
+    if size is None:
+        size = 30
+    obs_d, obd_exd = convert_fdc_data(df.obd.values)
+    pr_min_d, pr_min_exd = convert_fdc_data(df.pr_min.values)
+    pr_max_d, pr_max_exd = convert_fdc_data(df.pr_max.values)
+    pt_min_d, pt_min_exd = convert_fdc_data(df.pt_min.values)
+    pt_max_d, pt_max_exd = convert_fdc_data(df.pt_max.values)
 
-    koki_temp()
+    fig, ax = plt.subplots(figsize=(width,height))
+    ax.fill_between(pr_min_exd*100, pr_min_d, pr_max_d, interpolate=False, facecolor="0.5", alpha=0.4)
+    ax.fill_between(pt_min_exd*100, pt_min_d, pt_max_d, interpolate=False, facecolor="b", alpha=0.4)
+    ax.scatter(obd_exd*100, obs_d, color='red',s=size, zorder=10, label="Observed").set_facecolor("none")
+    if orgsim is not None:
+        orgsim = orgsim
+        org_d, org_exd = convert_fdc_data(orgsim.iloc[:, 0].values)
+        ax.plot(org_exd*100, org_d, c='limegreen', lw=2, label="Original")
+    if bstc is True:
+        # for bstc in bstcs:
+        #     dd, eexd = convert_fdc_data(df.best_rel.values)
+        #     ax.plot(eexd*100, dd, lw=2, label=bstc)
+        # for bstc in bstcs:
+        dd, eexd = convert_fdc_data(df.best_rel.values)
+        ax.plot(eexd*100, dd, lw=2, label="best_rel")
 
+
+
+    ax.set_yscale('log')
+    ax.set_xlabel(r"Exceedence [%]", fontsize=12)
+    ax.set_ylabel(r"Flow rate $[m^3/s]$", fontsize=12)
+    ax.margins(0.01)
+    ax.tick_params(axis='both', labelsize=12)
+    plt.legend(fontsize=12, loc="lower left")
+    plt.tight_layout()
+    plt.savefig('fdc.png', bbox_inches='tight', dpi=300)
+    plt.show()
+    print(os.getcwd())  
+
+    # return pr_oe_min
+
+
+def convert_fdc_data(data):
+    data = np.sort(data)[::-1]
+    exd = np.arange(1.,len(data)+1) / len(data)
+    return data, exd
+
+
+def plot_each_obg(df, rel_idx):
+    # df = handler.filter_candidates2()
+    obgs = df.obgnme.unique()
+    df = df[["obsval", "obgnme", "time", rel_idx]]
+
+    fig, axes = plt.subplots(figsize=(5.5, 12), nrows=len(obgs))
+    for obg, ax in zip(obgs, axes):
+        dff = df.loc[df["obgnme"]==obg]
+        obds = dff.obsval.values
+        sims = dff.loc[:, rel_idx].values
+        pbias = objfns.pbias(obds, sims)
+        ns = objfns.nashsutcliffe(obds, sims)
+        rsq = objfns.rsquared(obds, sims)
+        rmse = objfns.rmse(obds, sims)
+        mse = objfns.mse(obds, sims)
+        pcc = objfns.correlationcoefficient(obds, sims)
+        ax.text(
+            0, 1,
+            f'obg: {obg} - ns: {ns:.2f}, rmse: {rmse:.2f}, pbias: {pbias:.2f}, rsq: {rsq:.2f}',
+            horizontalalignment='left',fontsize=10,
+            bbox=dict(facecolor='m', alpha=0.5),
+            transform=ax.transAxes
+            )
+        ax.scatter(dff.time, dff.obsval, c="r", s=3, alpha=0.2, zorder=3)
+        ax.plot(dff.time, dff.loc[:, rel_idx])
+    # plt.title(f"rel_name: {rel_idx}")
+    fig.suptitle(f'rel{rel_idx}', fontsize=10, y=1)
+    fig.tight_layout()
+    plt.savefig(f'rel{rel_idx}.png', bbox_inches='tight', dpi=300)
+    # plt.show()
+
+def fdc(
+        df, rel_nams, ncols=5,
+        width=7, height=5, obgnme="sub03"
+        ):
+    nrows = math.ceil(len(rel_nams)/ncols)
+    fig, axes = plt.subplots(
+        figsize=(width, height), nrows=nrows, ncols=ncols,
+        sharex=True, sharey=True)
+    for i, ax in enumerate(axes.flat):
+        if i<len(rel_nams):
+            rel_idx = rel_nams[i]
+            dff = df[["obsval", "obgnme", "time", rel_idx]]
+            dff = dff.loc[dff["obgnme"]==obgnme]
+            odd, oeexd = convert_fdc_data(dff.obsval.values)
+            sdd, seexd = convert_fdc_data(dff.loc[:, rel_idx].values)
+            ax.plot(seexd*100, sdd, lw=2, label="sim_sub03")
+            ax.plot(oeexd*100, odd, lw=2, label="obd")
+            ax.set_yscale('log')
+            # ax.set_xlabel(r"Exceedence [%]", fontsize=12)
+            # ax.set_ylabel(r"Flow rate $[m^3/s]$", fontsize=12)
+            ax.margins(0.01)
+            # ax.tick_params(axis='both', labelsize=12)
+            # plt.legend(fontsize=12, loc="lower left")
+            ax.text(
+                1, 0.8, f'rel{rel_idx}', fontsize=10,
+                horizontalalignment='right',
+                transform=ax.transAxes)
+        else:
+            ax.axis('off')
+            ax.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    plt.tight_layout()
+    plt.savefig(f'fdc_{obgnme}.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
+
+
+def single_fdc(df):
+    # from get_stf_sim_obd
+    fig, ax = plt.subplots()
+    odd, oeexd = convert_fdc_data(df.iloc[:, 1].values)
+    sdd, seexd = convert_fdc_data(df.iloc[:, 0].values)
+    ax.plot(seexd*100, sdd, lw=2, label="sim")
+    ax.plot(oeexd*100, odd, lw=2, label="obd")
+    ax.set_yscale('log')
+    # ax.set_xlabel(r"Exceedence [%]", fontsize=12)
+    # ax.set_ylabel(r"Flow rate $[m^3/s]$", fontsize=12)
+    ax.margins(0.01)
+    # ax.tick_params(axis='both', labelsize=12)
+    # plt.legend(fontsize=12, loc="lower left")
+    # ax.text(
+    #     1, 0.8, f'rel{rel_idx}', fontsize=10,
+    #     horizontalalignment='right',
+        # transform=ax.transAxes)
+    plt.tight_layout()
+    # plt.savefig(f'fdc_{obgnme}.png', bbox_inches='tight', dpi=300)
+    plt.show()
 

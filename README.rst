@@ -108,9 +108,10 @@ A browser window with a Jupyter notebook instance should open. Yay!
 
    from swatmf import swatmf_pst_utils
 
-   >>> wd = "User-SWAT-MODFLOW working directory"
-   >>> swat_wd = "User-SWAT working directory"
-   >>> swatmf_pst_utils.init_setup(wd, swat_wd)
+   >>> prj_dir = "project directory"
+   >>> swatmfwd = "SWAT-MODFLOW model"
+   >>> swatwd = "SWAT model"
+   >>> swatmf_pst_utils.init_setup(prj_dir, swatmfwd, swatwd))
 
    Creating 'backup' folder ... passed
    Creating 'echo' folder ... passed

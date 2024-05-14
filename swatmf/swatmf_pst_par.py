@@ -89,6 +89,7 @@ def riv_par(wd):
         # BUG: change hard code skiprows = 3 
         # read riv pacakge
         df_riv = pd.read_csv('riv_package.org', sep=r'\s+', skiprows=3, header=None)
+        print(df_riv)
         # BUG: prevent 3rd column gets float 
         df_riv.iloc[:, 2] = df_riv.iloc[:, 2].map(lambda x: '{:.0f}'.format(x))
         # read mf_riv_par.par

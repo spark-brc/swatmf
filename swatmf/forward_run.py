@@ -12,6 +12,7 @@ from swatmf import swatmf_pst_par, utils
 from swatmf import swatmf_pst_utils
 from swatmf.handler import SWATMFout
 from swatmf.utils import swat_configs
+from swatmf.utils import mf_configs
 
 
 wd = os.getcwd()
@@ -114,6 +115,11 @@ if __name__ == '__main__':
     m1.subbasins = [subbasins]
     m1.update_swat_parms()
 
+    # update River parameters
+    rivmf = mf_configs.mfEdit(wd)
+    mf_configs.write_new_riv()
+
+
     # execute model
     execute_swatmf()
     # extract sims
@@ -139,12 +145,15 @@ if __name__ == '__main__':
                             )
         print("GW sim extraction finished ...")
 
-    # NOTE: this is a temporary function
-    if swatmf_con.loc['avg_grids', 'vals'] != 'n':
-        avg_grids = swatmf_con.loc['avg_grids','vals'].strip('][').split(', ')
-        avg_grids = [int(i) for i in avg_grids]    
-        avg_stdate = swatmf_con.loc['avg_dtw_stdate', 'vals']
-        avg_eddate = swatmf_con.loc['avg_dtw_eddate', 'vals']
-        extract_avg_depth_to_water(avg_grids, sim_start, avg_stdate, avg_eddate)
+    # # NOTE: this is a temporary function
+    # if swatmf_con.loc['avg_grids', 'vals'] != 'n':
+    #     avg_grids = swatmf_con.loc['avg_grids','vals'].strip('][').split(', ')
+    #     avg_grids = [int(i) for i in avg_grids]    
+    #     avg_stdate = swatmf_con.loc['avg_dtw_stdate', 'vals']
+    #     avg_eddate = swatmf_con.loc['avg_dtw_eddate', 'vals']
+    #     extract_avg_depth_to_water(avg_grids, sim_start, avg_stdate, avg_eddate)
 
+    # extract mf static depth to waterlevels
+    mfout = SWATMFout(wd)
+    mfout.get_static_gw()
     print(wd)
